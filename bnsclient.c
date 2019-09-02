@@ -39,8 +39,12 @@ int main(void) {
         memset(&buffer, 0, sizeof(buffer));
         int n, len;
         n = recvfrom(sockfd, &buffer, sizeof(buffer), MSG_WAITALL, (struct sockaddr *)&serveraddr, &len);
+        if (n < 0) {
+            perror("recvfrom failed");
+            break;
+        }
+        
         buffer[n] = '\0';
-
         printf("Server: %s\n", buffer);
     }
 

@@ -4,6 +4,6 @@
 .vscode/*
 .vscode
 
-server
-client
+bns
+bnsclient
 test

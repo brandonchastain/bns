@@ -14,7 +14,7 @@
 #include "util.h"
 
 #define PORT 50037 
-#define MAX_BUFFER_SIZE 10
+#define MAX_BUFFER_SIZE 1024
 
 static volatile sig_atomic_t ctrlCReceived = 0;
 static int sockfd = 0;
@@ -79,13 +79,21 @@ void listenForUdpQueries() {
         }
 
         buffer[length] = '\0';
-
         printf("%d bytes: '%s'\n", length, buffer);
-        printf("binary [%d]:\n", MAX_BUFFER_SIZE);
-        printBinStr((BYTE*)&buffer, MAX_BUFFER_SIZE);
+
+        printf("binary [%d]:\n", length);
+        printBinStr((BYTE*)&buffer, length);
+
+        // Parse the DNS request.
+        parseDnsRequest((BYTE*)&buffer, length);
 
         const char* ack = "acking udp request.";
-        sendto(sockfd, ack, strlen(ack), MSG_CONFIRM, (const struct sockaddr *)&clientAddr, clientAddrLength);
+        int r = sendto(sockfd, ack, strlen(ack), MSG_CONFIRM, (const struct sockaddr *)&clientAddr, clientAddrLength);
+        if (r < 0) {
+            perror("sendto failed");
+            break;
+        }
+
         printf("ack message sent.\n");
     }
 }
