@@ -2,6 +2,34 @@
 #include <string.h>
 #include "common.h"
 
+uint16_t parseHeader(Header* h, BYTE* rawRequest) {
+    BYTE rawHeader[12];
+    memcpy(&rawHeader, rawRequest, sizeof(rawHeader));
+
+    h->identifier |= rawHeader[1];
+    h->identifier = rawHeader[0] << 8;
+
+    h->queryResponse = (rawHeader[2] >> 7);
+    h->opCode = ((rawHeader[2] & 0x78)) >> 3;
+    h->aa = ((rawHeader[2] & 0b00000100)) >> 2;
+    h->tc = ((rawHeader[2] & 0b00000010)) >> 1;
+    h->rd = ((rawHeader[2] & 0b00000001));
+    h->ra = ((rawHeader[3] & 0b10000000)) >> 7;
+    h->z = ((rawHeader[3] & 0b01110000)) >> 4;
+    h->rCode = ((rawHeader[3] & 0x0f));
+
+    h->questionCount = rawHeader[4] << 8;
+    h->questionCount |= rawHeader[5];
+    h->answerCount = rawHeader[6] << 8;
+    h->answerCount |= rawHeader[7];
+    h->authorityCount = rawHeader[8] << 8;
+    h->authorityCount |= rawHeader[9];
+    h->addtlCount = rawHeader[10] << 8;
+    h->addtlCount = rawHeader[11];
+
+    return sizeof(rawHeader);
+}
+
 void printHeader(Header *h) {
     assert(h != NULL);
 
@@ -21,6 +49,45 @@ void printHeader(Header *h) {
     printf("\taddtlCount: %d\n", h->addtlCount);
 }
 
+uint16_t parseQuestion(Question* q, BYTE* rawRequest) {
+    printf("reading qname...\n");
+    uint16_t bytesRead = 0;
+
+    BYTE* curr = rawRequest;
+    BYTE name[QNAME_SIZE];
+    BYTE* currOut = name;
+
+    char dot = '.';
+    while (*curr != 0) {
+        BYTE labelLen = *curr;
+        curr += 1;
+        printf("copying label...\n");
+        memcpy(currOut, curr, labelLen);
+        currOut += labelLen;
+        printf("copied. adding a dot...\n");
+        memset(currOut, dot, sizeof(dot));
+        currOut += sizeof(dot);
+        printf("dot added.\n");
+
+        curr += labelLen;
+        bytesRead += (labelLen + 1);
+        printf("read %d bytes so far: %s\n", bytesRead, name);
+    }
+
+    char nullTerm = '\0';
+    memset(currOut, nullTerm, sizeof(nullTerm));
+    currOut += sizeof(nullTerm);
+
+    strcpy(q->qname, name);
+
+    return bytesRead;
+}
+
+void printQuestion(Question* q) {
+    printf("QUESTION\n");
+    printf("\tqname: %s\n", q->qname);
+}
+
 int parseDnsRequest(BYTE* buffer, size_t bufferSize) {
     if (bufferSize > 512) {
         printf("error: dns request is larger than allowed max size of 512 bytes");
@@ -29,29 +96,14 @@ int parseDnsRequest(BYTE* buffer, size_t bufferSize) {
 
     Header h;
     memset(&h, 0, sizeof(h));
-
-    h.identifier = buffer[0] << 8;
-    h.identifier |= buffer[1];
-
-    h.queryResponse = (buffer[2] >> 7);
-    h.opCode = ((buffer[2] & 0x78)) >> 3;
-    h.aa = ((buffer[2] & 0b00000100)) >> 2;
-    h.tc = ((buffer[2] & 0b00000010)) >> 1;
-    h.rd = ((buffer[2] & 0b00000001));
-    h.ra = ((buffer[3] & 0b10000000)) >> 7;
-    h.z = ((buffer[3] & 0b01110000)) >> 4;
-    h.rCode = ((buffer[3] & 0x0f));
-
-    h.questionCount = buffer[4] << 8;
-    h.questionCount |= buffer[5];
-    h.answerCount = buffer[6] << 8;
-    h.answerCount |= buffer[7];
-    h.authorityCount = buffer[8] << 8;
-    h.authorityCount |= buffer[9];
-    h.addtlCount = buffer[10] << 8;
-    h.addtlCount = buffer[11];
-
+    uint16_t hBytesRead = parseHeader(&h, buffer);
     printHeader(&h);
+
+    //assuming one question for now
+    Question q;
+    memset(&q, 0, sizeof(q));
+    uint16_t qBytesRead = parseQuestion(&q, &buffer[hBytesRead]); // start at next byte after the header
+    printQuestion(&q);
 
     return 0;
 }

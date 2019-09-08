@@ -4,16 +4,14 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#define QNAME_SIZE 255
+
 typedef enum { 
     FALSE,
     TRUE
 } BOOLEAN;
 
 typedef unsigned char BYTE;
-
-typedef struct _rawHeader {
-    BYTE headerBytes[12];
-} RawHeader;
 
 typedef struct _header {
     uint16_t identifier;
@@ -31,12 +29,8 @@ typedef struct _header {
     uint16_t addtlCount;
 } Header;
 
-typedef struct _rawQuestion {
-    BYTE questionBytes[6];
-} RawQuestion;
-
 typedef struct _question {
-    char qname[63];
+    char qname[QNAME_SIZE];
     uint16_t qtype; //todo: make enums for these instead of raw bytes
     uint16_t qclass;
 } Question;
