@@ -49,36 +49,48 @@ void printHeader(Header *h) {
     printf("\taddtlCount: %d\n", h->addtlCount);
 }
 
-uint16_t parseQuestion(Question* q, BYTE* rawRequest) {
-    printf("reading qname...\n");
+uint16_t parseQuestion(Question* q, uint16_t qcount, BYTE* rawRequest) {
     uint16_t bytesRead = 0;
+    for (int i = 0; i < qcount; i++) {
+        BYTE* curr = rawRequest; //current pointer
 
-    BYTE* curr = rawRequest;
-    BYTE name[QNAME_SIZE];
-    BYTE* currOut = name;
+        //qname
+        BYTE name[QNAME_SIZE];
+        BYTE* currOut = name;
 
-    char dot = '.';
-    while (*curr != 0) {
-        BYTE labelLen = *curr;
+        char dot = '.';
+        while (*curr != 0) {
+            BYTE labelLen = *curr;
+            curr += 1;
+            memcpy(currOut, curr, labelLen);
+            currOut += labelLen;
+
+            memset(currOut, dot, sizeof(dot));
+            currOut += sizeof(dot);
+
+            curr += labelLen;
+            bytesRead += (labelLen + 1);
+        }
+
+        // add null terminator to qname
+        char nullTerm = '\0';
+        memset(currOut, nullTerm, sizeof(nullTerm));
+        currOut += sizeof(nullTerm);
+        strcpy(q->qname, name);
+
         curr += 1;
-        printf("copying label...\n");
-        memcpy(currOut, curr, labelLen);
-        currOut += labelLen;
-        printf("copied. adding a dot...\n");
-        memset(currOut, dot, sizeof(dot));
-        currOut += sizeof(dot);
-        printf("dot added.\n");
+        bytesRead += 1; // count the last 0 of the label sequence
 
-        curr += labelLen;
-        bytesRead += (labelLen + 1);
-        printf("read %d bytes so far: %s\n", bytesRead, name);
+        q->qtype |= rawRequest[bytesRead + 1];
+        q->qtype |= (rawRequest[bytesRead] << 8);
+        curr += 2;
+        bytesRead += 2;
+
+        q->qclass = rawRequest[bytesRead + 1];
+        q->qclass |= (rawRequest[bytesRead] << 8);
+        curr += 2;
+        bytesRead += 2;
     }
-
-    char nullTerm = '\0';
-    memset(currOut, nullTerm, sizeof(nullTerm));
-    currOut += sizeof(nullTerm);
-
-    strcpy(q->qname, name);
 
     return bytesRead;
 }
@@ -86,6 +98,8 @@ uint16_t parseQuestion(Question* q, BYTE* rawRequest) {
 void printQuestion(Question* q) {
     printf("QUESTION\n");
     printf("\tqname: %s\n", q->qname);
+    printf("\tqclass: %s\n", stringFromQClass(q->qclass));
+    printf("\tqtype: %s\n", stringFromQType(q->qtype));
 }
 
 int parseDnsRequest(BYTE* buffer, size_t bufferSize) {
@@ -100,10 +114,15 @@ int parseDnsRequest(BYTE* buffer, size_t bufferSize) {
     printHeader(&h);
 
     //assuming one question for now
-    Question q;
+    Question q[512 / sizeof(Question)];
     memset(&q, 0, sizeof(q));
-    uint16_t qBytesRead = parseQuestion(&q, &buffer[hBytesRead]); // start at next byte after the header
-    printQuestion(&q);
+    uint16_t qBytesRead = parseQuestion(q, h.questionCount, &buffer[hBytesRead]); // start at next byte after the header
+    
+    for (int i = 0; i < h.questionCount; i++) {
+        printQuestion(&q[i]);
+    }
+
+    printf("%d bytes read.\n", hBytesRead + qBytesRead);
 
     return 0;
 }

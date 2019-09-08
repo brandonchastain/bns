@@ -6,6 +6,25 @@
 
 #define QNAME_SIZE 255
 
+typedef enum {
+    A = 1,
+    NS = 2
+} QTYPE;
+
+static inline char *stringFromQType(QTYPE qtype) {
+    static char *strings[] = { "A", "NS" };
+    return strings[qtype - 1];
+}
+
+typedef enum {
+    IN = 1
+} QCLASS;
+
+static inline char *stringFromQClass(QCLASS qclass) {
+    static char *strings[] = { "IN" };
+    return strings[qclass - 1];
+}
+
 typedef enum { 
     FALSE,
     TRUE
@@ -31,8 +50,8 @@ typedef struct _header {
 
 typedef struct _question {
     char qname[QNAME_SIZE];
-    uint16_t qtype; //todo: make enums for these instead of raw bytes
-    uint16_t qclass;
+    QTYPE qtype;
+    QCLASS qclass;
 } Question;
 
 typedef struct _answer {

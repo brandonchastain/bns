@@ -81,8 +81,11 @@ void listenForUdpQueries() {
         buffer[length] = '\0';
         printf("%d bytes: '%s'\n", length, buffer);
 
-        printf("binary [%d]:\n", length);
+        printf("binary:\n");
         printBinStr((BYTE*)&buffer, length);
+
+        printf("hex:\n");
+        printHexStr((BYTE*)&buffer, length);
 
         // Parse the DNS request.
         parseDnsRequest((BYTE*)&buffer, length);

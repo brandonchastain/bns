@@ -39,3 +39,13 @@ void printBinStr(unsigned char* buffer, size_t bufferSize) {
     tobinstr(buffer, bufferSize, binstr);
     printf("%s\n", binstr);
 }
+
+void printHexStr(unsigned char* buffer, size_t bufferSize) {
+    for (int i = 0; i < bufferSize; i++) {
+        printf("%02x ", buffer[i]);
+        if (i % 8 >= 7) {
+            printf("\n");
+        }
+    }
+    printf("\n");
+}
