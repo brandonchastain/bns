@@ -2,22 +2,23 @@
 #include <string.h>
 #include "common.h"
 
+const uint16_t mask_qr = 1<<15;
+const uint16_t mask_opcode = 0x07<<11;
+const uint16_t mask_aa = 1<<10;
+const uint16_t mask_tc = 1<<9;
+const uint16_t mask_rd = 1<<8;
+const uint16_t mask_ra = 1<<7;
+const uint16_t mask_z = 0x07<<4;
+const uint16_t mask_rcode = 0x0f;
+
 uint16_t parseHeader(Header* h, BYTE* rawRequest) {
     BYTE rawHeader[12];
     memcpy(&rawHeader, rawRequest, sizeof(rawHeader));
 
-    h->identifier |= rawHeader[1];
     h->identifier = rawHeader[0] << 8;
-
-    h->queryResponse = (rawHeader[2] >> 7);
-    h->opCode = ((rawHeader[2] & 0x78)) >> 3;
-    h->aa = ((rawHeader[2] & 0b00000100)) >> 2;
-    h->tc = ((rawHeader[2] & 0b00000010)) >> 1;
-    h->rd = ((rawHeader[2] & 0b00000001));
-    h->ra = ((rawHeader[3] & 0b10000000)) >> 7;
-    h->z = ((rawHeader[3] & 0b01110000)) >> 4;
-    h->rCode = ((rawHeader[3] & 0x0f));
-
+    h->identifier |= rawHeader[1];
+    h->flags = rawHeader[2] << 8;
+    h->flags |= rawHeader[3];
     h->questionCount = rawHeader[4] << 8;
     h->questionCount |= rawHeader[5];
     h->answerCount = rawHeader[6] << 8;
@@ -30,23 +31,56 @@ uint16_t parseHeader(Header* h, BYTE* rawRequest) {
     return sizeof(rawHeader);
 }
 
+void serializeHeader(BYTE* bytes, Header *h) {
+    memcpy(bytes, &(h->identifier), 2);
+    memcpy((bytes + 2), &(h->flags), 2);
+    memcpy((bytes + 4), &(h->questionCount), 2);
+    memcpy((bytes + 6), &(h->answerCount), 2);
+    memcpy((bytes + 8), &(h->authorityCount), 2);
+    memcpy((bytes + 10), &(h->addtlCount), 2);
+}
+
 void printHeader(Header *h) {
     assert(h != NULL);
 
     printf("HEADER\n");
     printf("\tid: %d\n", h->identifier);
-    printf("\tqueryResponse: %d\n", h->queryResponse);
-    printf("\topCode: %d\n", h->opCode);
-    printf("\taa: %d\n", h->aa);
-    printf("\ttc: %d\n", h->tc);
-    printf("\trd: %d\n", h->rd);
-    printf("\tra: %d\n", h->ra);
-    printf("\tz: %d\n", h->z);
-    printf("\trCode: %d\n", h->rCode);
+    printf("\tflags: %d\n", h->flags);
+    printf("\tqueryResponse: %d\n", GET_BITFLAG(h->flags, mask_qr));
+    printf("\topcode: %d\n", GET_OPCODE(h->flags));
+    printf("\taa: %d\n", GET_BITFLAG(h->flags, mask_aa));
+    printf("\ttc: %d\n", GET_BITFLAG(h->flags, mask_tc));
+    printf("\trd: %d\n", GET_BITFLAG(h->flags, mask_rd));
+    printf("\tra: %d\n", GET_BITFLAG(h->flags, mask_ra));
+    printf("\tz: %d\n", (h->flags & mask_z) >> 4);
+    printf("\trcode: %d\n", (h->flags & mask_rcode));
     printf("\tquestionCount: %d\n", h->questionCount);
     printf("\tanswerCount: %d\n", h->answerCount);
     printf("\tauthorityCount: %d\n", h->authorityCount);
     printf("\taddtlCount: %d\n", h->addtlCount);
+}
+
+void getRawQuestion(BYTE* rawQuestion, size_t* rawQuestionLen, BYTE* rawRequest) {
+    uint16_t bytesRead = 0;
+    BYTE* curr = rawRequest; //current pointer
+
+    while (rawRequest[bytesRead] != 0x0) {
+        rawQuestion[bytesRead] = rawRequest[bytesRead];
+        bytesRead += 1;
+    }
+    
+    rawQuestion[bytesRead] = rawRequest[bytesRead];
+    bytesRead += 1;
+
+    //qclass
+    memcpy(&(rawQuestion[bytesRead]), &(rawRequest[bytesRead]), 2);
+    bytesRead += 2;
+
+    //qtype
+    memcpy(&(rawQuestion[bytesRead]), &(rawRequest[bytesRead]), 2);
+    bytesRead += 2;
+
+    *rawQuestionLen = bytesRead;
 }
 
 uint16_t parseQuestion(Question* q, uint16_t qcount, BYTE* rawRequest) {
@@ -102,8 +136,8 @@ void printQuestion(Question* q) {
     printf("\tqtype: %s\n", stringFromQType(q->qtype));
 }
 
-int parseDnsRequest(BYTE* buffer, size_t bufferSize) {
-    if (bufferSize > 512) {
+int printDnsRequest(BYTE* buffer, size_t bufferSize) {
+    if (bufferSize > MAX_BUFFER) {
         printf("error: dns request is larger than allowed max size of 512 bytes");
         return -1;
     }
@@ -122,7 +156,5 @@ int parseDnsRequest(BYTE* buffer, size_t bufferSize) {
         printQuestion(&q[i]);
     }
 
-    printf("%d bytes read.\n", hBytesRead + qBytesRead);
-
-    return 0;
+    printf("%d bytes read.\n\n", hBytesRead + qBytesRead);
 }

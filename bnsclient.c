@@ -36,7 +36,7 @@ int main(void) {
         printf("message sent\n");
 
         BYTE buffer[MAX_BUFFER_SIZE];
-        memset(&buffer, 0, sizeof(buffer));
+        memset(buffer, 0, sizeof(buffer));
         int n, len;
         n = recvfrom(sockfd, &buffer, sizeof(buffer), MSG_WAITALL, (struct sockaddr *)&serveraddr, &len);
         if (n < 0) {

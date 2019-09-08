@@ -61,17 +61,19 @@ int initSocket() {
 }
 
 void listenForUdpQueries() {
-    printf("Listening on port %d\n", PORT);
+    printf("Listening on port %d\n\n", PORT);
 
     setUpCtrlCHandler();
 
     while (!ctrlCReceived) {
         BYTE buffer[MAX_BUFFER_SIZE];
-        memset(&buffer, 0, MAX_BUFFER_SIZE);
+        memset(buffer, 0, MAX_BUFFER_SIZE);
 
         struct sockaddr_in clientAddr;
         int clientAddrLength = sizeof(clientAddr);
         memset(&clientAddr, 0, clientAddrLength);
+
+        // wait for incoming udp message
         int length = recvfrom(sockfd, buffer, sizeof(buffer) - 1, MSG_WAITALL, (struct sockaddr *)&clientAddr, &clientAddrLength);
         if (length < 0) {
             perror("recvfrom failed");
@@ -79,32 +81,71 @@ void listenForUdpQueries() {
         }
 
         buffer[length] = '\0';
-        printf("%d bytes: '%s'\n", length, buffer);
+        printf("%d bytes received.\n", length);
+        // printf("binary:\n");
+        // printBinStr((BYTE*)&buffer, length);
+        // printf("hex:\n");
+        // printHexStr(buffer, length);
 
-        printf("binary:\n");
-        printBinStr((BYTE*)&buffer, length);
+        // Print the DNS request.
+        printf("Incoming request:\n");
+        printDnsRequest(buffer, length);
 
-        printf("hex:\n");
-        printHexStr((BYTE*)&buffer, length);
+        // Grab the header
+        Header h;
+        memset(&h, 0, sizeof(h));
+        int hByteRead = parseHeader(&h, buffer);
 
-        // Parse the DNS request.
-        parseDnsRequest((BYTE*)&buffer, length);
+        memset(&(h.flags), 0, sizeof(h.flags));
+        SET_BITFLAG(h.flags, mask_qr);
+        SET_RCODE(h.flags, 3u);
 
-        const char* ack = "acking udp request.";
-        int r = sendto(sockfd, ack, strlen(ack), MSG_CONFIRM, (const struct sockaddr *)&clientAddr, clientAddrLength);
+        printf("Outgoing header:\n");
+        printHeader(&h);
+
+        BYTE sh1[sizeof(Header)];
+        memset(sh1, 0, sizeof(sh1));
+        serializeHeader(sh1, &h);
+
+        // printf("Serialized header:\n");
+        // printHexStr(sh1, sizeof(sh1));
+
+        // Answer the query
+        toNetworkOrder(&h);
+
+        BYTE sh[sizeof(Header)];
+        memset(sh, 0, sizeof(sh));
+        serializeHeader(sh, &h);
+
+        // printf("Serialized header (network order):\n");
+        // printHexStr(sh, sizeof(sh));
+
+        BYTE rawQuestion[512];
+        size_t rawQSize = 0;
+        getRawQuestion(rawQuestion, &rawQSize, &(buffer[12]));
+
+        BYTE response[MAX_BUFFER];
+        memset(response, 0, MAX_BUFFER);
+        memcpy(&response, sh, sizeof(sh));
+        memcpy(&(response[sizeof(sh)]), rawQuestion, rawQSize);
+
+        // printf("Response (network order):\n");
+        // printHexStr(response, sizeof(sh) + rawQSize);
+
+        int r = sendto(sockfd, response, sizeof(sh) + rawQSize, MSG_CONFIRM, (const struct sockaddr *)&clientAddr, clientAddrLength);
         if (r < 0) {
             perror("sendto failed");
             break;
         }
 
-        printf("ack message sent.\n");
+        printf("answer sent.\n");
     }
 }
 
 int main(void) {
-    printf("beginning init\n");
+    printf("beginning init...\n");
     initSocket();
-    printf("initialized socket\n");
+    printf("init complete.\n");
 
     listenForUdpQueries();
     

@@ -4,7 +4,24 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#define MAX_BUFFER 512
 #define QNAME_SIZE 255
+
+// macros and masks for manipulating header flags
+#define GET_BITFLAG(flags, mask) ((flags & mask) > 0)
+#define SET_BITFLAG(flags, mask) (flags |= mask)
+#define CLEAR_BITFLAG(flags, mask) (flags &= ~mask)
+#define GET_OPCODE(flags) ((flags & mask_opcode) >> 11)
+#define SET_RCODE(flags, val) (flags |= (val & mask_rcode))
+
+extern const uint16_t mask_qr;
+extern const uint16_t mask_opcode;
+extern const uint16_t mask_aa;
+extern const uint16_t mask_tc;
+extern const uint16_t mask_rd;
+extern const uint16_t mask_ra;
+extern const uint16_t mask_z;
+extern const uint16_t mask_rcode;
 
 typedef enum {
     A = 1,
@@ -34,14 +51,7 @@ typedef unsigned char BYTE;
 
 typedef struct _header {
     uint16_t identifier;
-    BYTE queryResponse:1;
-    BYTE opCode:4;
-    BYTE aa:1;  // authoritative answer
-    BYTE tc:1;  // truncated message
-    BYTE rd:1;  // recursion desired
-    BYTE ra:1;  // recursion available
-    BYTE z:3;   // unused. reserved for dnssec
-    BYTE rCode:4;
+    uint16_t flags;
     uint16_t questionCount;
     uint16_t answerCount;
     uint16_t authorityCount;
@@ -58,6 +68,13 @@ typedef struct _answer {
 
 }  Answer;
 
-int parseDnsRequest(BYTE*, size_t);
+int printDnsRequest(BYTE*, size_t);
+void printHeader(Header*);
+uint16_t parseHeader(Header*, BYTE*);
+
+void serializeHeader(BYTE*, Header *);
+void serializeQuestion(BYTE*, Question *);
+void getRawQuestion(BYTE*, size_t*, BYTE*);
+
 
 #endif

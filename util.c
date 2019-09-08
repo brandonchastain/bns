@@ -1,6 +1,18 @@
+#include <arpa/inet.h>
+#include <assert.h>
 #include "util.h"
 
 #define OCTET_SIZE 8
+
+// convert endianness where needed
+void toNetworkOrder(Header* h) {
+    h->identifier = htons(h->identifier);
+    h->flags = htons(h->flags);
+    h->questionCount = htons(h->questionCount);
+    h->answerCount = htons(h->answerCount);
+    h->authorityCount = htons(h->authorityCount);
+    h->addtlCount = htons(h->addtlCount);
+}
 
 BYTE getMSBInUTF8(BYTE c) {
     BYTE msb = c & 0b10000000;
