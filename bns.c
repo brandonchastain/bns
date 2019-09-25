@@ -91,43 +91,37 @@ void listenForUdpQueries() {
         printf("Incoming request:\n");
         printDnsRequest(buffer, length);
 
-        // Grab the header
+        // Copy the header
         Header h;
         memset(&h, 0, sizeof(h));
         int hByteRead = parseHeader(&h, buffer);
 
+        // header flags
         memset(&(h.flags), 0, sizeof(h.flags));
         SET_BITFLAG(h.flags, mask_qr);
         SET_RCODE(h.flags, 3u);
 
+        printf("Creating answer...\n\n");
         printf("Outgoing header:\n");
         printHeader(&h);
 
-        BYTE sh1[sizeof(Header)];
-        memset(sh1, 0, sizeof(sh1));
-        serializeHeader(sh1, &h);
-
-        // printf("Serialized header:\n");
-        // printHexStr(sh1, sizeof(sh1));
-
-        // Answer the query
-        toNetworkOrder(&h);
+        Header htemp = h;
+        toNetworkOrder(&htemp); // convert multi-byte properties to network order
 
         BYTE sh[sizeof(Header)];
         memset(sh, 0, sizeof(sh));
-        serializeHeader(sh, &h);
+        serializeHeader(sh, &htemp);
 
-        // printf("Serialized header (network order):\n");
-        // printHexStr(sh, sizeof(sh));
-
+        // copy the questions to include in response
         BYTE rawQuestion[512];
         size_t rawQSize = 0;
         getRawQuestion(rawQuestion, &rawQSize, &(buffer[12]));
 
+        // populate response buffer
         BYTE response[MAX_BUFFER];
         memset(response, 0, MAX_BUFFER);
-        memcpy(&response, sh, sizeof(sh));
-        memcpy(&(response[sizeof(sh)]), rawQuestion, rawQSize);
+        memcpy(&response, sh, sizeof(sh)); // copy the serialized header
+        memcpy(&(response[sizeof(sh)]), rawQuestion, rawQSize); // copy the questions
 
         // printf("Response (network order):\n");
         // printHexStr(response, sizeof(sh) + rawQSize);

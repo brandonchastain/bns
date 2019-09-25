@@ -83,34 +83,46 @@ void getRawQuestion(BYTE* rawQuestion, size_t* rawQuestionLen, BYTE* rawRequest)
     *rawQuestionLen = bytesRead;
 }
 
+int getQName(char *qname, size_t qnameSize, BYTE* rawRequest) {
+    if (qnameSize < QNAME_SIZE + 1) {
+        // buffer not large enough for max qname size + null term
+        return -1;
+    }
+
+    uint16_t bytesRead = 0;
+    BYTE* currIn = rawRequest;
+    BYTE* currOut = qname;
+
+    char dot = '.';
+    while (*currIn != 0) {
+        BYTE labelLen = *currIn;
+        currIn += 1;
+        memcpy(currOut, currIn, labelLen);
+        currOut += labelLen;
+
+        memset(currOut, dot, sizeof(dot));
+        currOut += sizeof(dot);
+
+        currIn += labelLen;
+        bytesRead += (labelLen + 1);
+    }
+
+    // add null terminator to qname
+    char nullTerm = '\0';
+    memset(currOut, nullTerm, sizeof(nullTerm));
+
+    return bytesRead;
+}
+
 uint16_t parseQuestion(Question* q, uint16_t qcount, BYTE* rawRequest) {
     uint16_t bytesRead = 0;
     for (int i = 0; i < qcount; i++) {
         BYTE* curr = rawRequest; //current pointer
 
-        //qname
-        BYTE name[QNAME_SIZE];
-        BYTE* currOut = name;
-
-        char dot = '.';
-        while (*curr != 0) {
-            BYTE labelLen = *curr;
-            curr += 1;
-            memcpy(currOut, curr, labelLen);
-            currOut += labelLen;
-
-            memset(currOut, dot, sizeof(dot));
-            currOut += sizeof(dot);
-
-            curr += labelLen;
-            bytesRead += (labelLen + 1);
-        }
-
-        // add null terminator to qname
-        char nullTerm = '\0';
-        memset(currOut, nullTerm, sizeof(nullTerm));
-        currOut += sizeof(nullTerm);
-        strcpy(q->qname, name);
+        // qname
+        char qname[QNAME_SIZE];
+        int qnameBytes = getQName(qname, sizeof(qname), curr);
+        strcpy(q->qname, qname);
 
         curr += 1;
         bytesRead += 1; // count the last 0 of the label sequence
