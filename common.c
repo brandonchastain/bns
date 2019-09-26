@@ -109,21 +109,22 @@ int getQName(char *qname, size_t qnameSize, BYTE* rawRequest) {
         bytesRead += (labelLen + 1);
     }
 
-    // add null terminator to qname
+    // add null terminator to qname and count it
     char nullTerm = '\0';
     memset(currOut, nullTerm, sizeof(nullTerm));
+    bytesRead += 1;
 
-    return bytesRead + 1;
+    return bytesRead;
 }
 
 uint16_t parseQuestion(Question* q, uint16_t qcount, BYTE* rawRequest) {
     uint16_t bytesRead = 0;
     for (int i = 0; i < qcount; i++) {
-        BYTE* curr = rawRequest; //current pointer
+        int currentByte = 0;
 
         // qname
         char qname[QNAME_SIZE + 1];
-        int qnameBytes = getQName(qname, sizeof(qname), curr);
+        int qnameBytes = getQName(qname, sizeof(qname), (rawRequest + bytesRead));
         if (qnameBytes <= 0) {
             printf("ERROR: Unable to parse qname.\n");
             printBinStr(qname, sizeof(qname));
@@ -132,18 +133,19 @@ uint16_t parseQuestion(Question* q, uint16_t qcount, BYTE* rawRequest) {
 
         strcpy(q->qname, qname);
 
-        curr += 1;
-        bytesRead += qnameBytes + 1; // count the last 0 of the label sequence
+        // count the final 0 at the end of the label sequence
+        currentByte += qnameBytes + 1;
 
-        q->qtype |= rawRequest[bytesRead + 1];
-        q->qtype |= (rawRequest[bytesRead] << 8);
-        curr += 2;
-        bytesRead += 2;
+        // qtype and qclass
+        q->qtype = rawRequest[bytesRead + currentByte];
+        q->qtype |= (rawRequest[bytesRead + currentByte + 1] << 8);
+        currentByte += 2;
 
-        q->qclass = rawRequest[bytesRead + 1];
-        q->qclass |= (rawRequest[bytesRead] << 8);
-        curr += 2;
-        bytesRead += 2;
+        q->qclass = rawRequest[bytesRead + currentByte];
+        q->qclass |= (rawRequest[bytesRead + currentByte + 1] << 8);
+        currentByte += 2;
+
+        bytesRead += currentByte;
     }
 
     return bytesRead;

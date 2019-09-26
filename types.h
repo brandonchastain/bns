@@ -60,8 +60,8 @@ typedef struct _header {
 
 typedef struct _question {
     char qname[QNAME_SIZE];
-    QTYPE qtype;
-    QCLASS qclass;
+    uint16_t qtype;
+    uint16_t qclass;
 } Question;
 
 typedef struct _answer {
