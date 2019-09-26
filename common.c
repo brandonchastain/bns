@@ -1,6 +1,8 @@
 #include <assert.h>
 #include <string.h>
 #include "common.h"
+#include "util.h"
+#include "types.h"
 
 const uint16_t mask_qr = 1<<15;
 const uint16_t mask_opcode = 0x07<<11;
@@ -85,7 +87,7 @@ void getRawQuestion(BYTE* rawQuestion, size_t* rawQuestionLen, BYTE* rawRequest)
 
 int getQName(char *qname, size_t qnameSize, BYTE* rawRequest) {
     if (qnameSize < QNAME_SIZE + 1) {
-        // buffer not large enough for max qname size + null term
+        printf("qname buffer is not large enough.\n");
         return -1;
     }
 
@@ -111,7 +113,7 @@ int getQName(char *qname, size_t qnameSize, BYTE* rawRequest) {
     char nullTerm = '\0';
     memset(currOut, nullTerm, sizeof(nullTerm));
 
-    return bytesRead;
+    return bytesRead + 1;
 }
 
 uint16_t parseQuestion(Question* q, uint16_t qcount, BYTE* rawRequest) {
@@ -120,12 +122,18 @@ uint16_t parseQuestion(Question* q, uint16_t qcount, BYTE* rawRequest) {
         BYTE* curr = rawRequest; //current pointer
 
         // qname
-        char qname[QNAME_SIZE];
+        char qname[QNAME_SIZE + 1];
         int qnameBytes = getQName(qname, sizeof(qname), curr);
+        if (qnameBytes <= 0) {
+            printf("ERROR: Unable to parse qname.\n");
+            printBinStr(qname, sizeof(qname));
+            return -1;
+        }
+
         strcpy(q->qname, qname);
 
         curr += 1;
-        bytesRead += 1; // count the last 0 of the label sequence
+        bytesRead += qnameBytes + 1; // count the last 0 of the label sequence
 
         q->qtype |= rawRequest[bytesRead + 1];
         q->qtype |= (rawRequest[bytesRead] << 8);

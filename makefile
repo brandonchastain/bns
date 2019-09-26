@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-g -I.
-DEPS = util.h common.h
+DEPS = types.h util.h common.h
 OBJ = bns.o util.o common.o
 CLIENTOBJ = bnsclient.o util.o common.o
 

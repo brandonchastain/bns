@@ -19,9 +19,13 @@
 static volatile sig_atomic_t ctrlCReceived = 0;
 static int sockfd = 0;
 
+void closeAll() {
+    close(sockfd);
+    printf("Closed the server connection.\n");
+}
+
 void ctrlCHandler(int s) {
     ctrlCReceived = 1;
-    close(sockfd);
 }
 
 void setUpCtrlCHandler() {
@@ -40,8 +44,6 @@ void initServerAddr(struct sockaddr_in* serverAddress) {
 
 int initSocket() {
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-    
-    printf("socket created.\n");
 
     if (sockfd < 0) {
         perror("Socket creation failed.\n");
@@ -50,9 +52,6 @@ int initSocket() {
 
     struct sockaddr_in serverAddress;
     initServerAddr(&serverAddress);
-
-    printf("server address initialized.\n");
-
     int bindResult = bind(sockfd, (struct sockaddr *)&serverAddress, sizeof(serverAddress));
     if (bindResult < 0) {
         perror("Bind failed.\n");
@@ -82,6 +81,7 @@ void listenForUdpQueries() {
 
         buffer[length] = '\0';
         printf("%d bytes received.\n", length);
+
         // printf("binary:\n");
         // printBinStr((BYTE*)&buffer, length);
         // printf("hex:\n");
@@ -99,7 +99,7 @@ void listenForUdpQueries() {
         // header flags
         memset(&(h.flags), 0, sizeof(h.flags));
         SET_BITFLAG(h.flags, mask_qr);
-        SET_RCODE(h.flags, 3u);
+        SET_RCODE(h.flags, 3u); // nxdomain
 
         printf("Creating answer...\n\n");
         printf("Outgoing header:\n");
@@ -137,14 +137,8 @@ void listenForUdpQueries() {
 }
 
 int main(void) {
-    printf("beginning init...\n");
     initSocket();
-    printf("init complete.\n");
-
     listenForUdpQueries();
-    
-    close(sockfd);
-    printf("Closed the server connection.\n");
-
+    closeAll();
     return 0;
 }

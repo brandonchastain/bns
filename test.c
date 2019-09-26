@@ -1,5 +1,6 @@
 #include <string.h>
 #include "util.h"
+#include "types.h"
 
 
 void testLongDomain() {
