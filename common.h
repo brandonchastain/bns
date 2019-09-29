@@ -12,5 +12,8 @@ uint16_t parseHeader(Header*, BYTE*);
 void serializeHeader(BYTE*, Header *);
 void serializeQuestion(BYTE*, Question *);
 void getRawQuestion(BYTE*, size_t*, BYTE*);
+uint16_t parseQuestion(Question*, uint16_t, BYTE*);
+
+void printResourceRecord(ResourceRecord*);
 
 #endif

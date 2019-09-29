@@ -158,6 +158,24 @@ void printQuestion(Question* q) {
     printf("\tqtype: %s\n", stringFromQType(q->qtype));
 }
 
+void printResourceRecord(ResourceRecord* rr) {
+    printf("RESOURCE RECORD\n");
+    printf("\ttype: %d\n", rr->type);
+    printf("\tclass: %d\n", rr->class);
+    printf("\tname: %s\n", rr->name);
+    printf("\tttl: %d\n", rr->ttl);
+    printf("\trdlength: %d\n", rr->rdlength);
+}
+
+void serializeResourceRecord(BYTE* bytes, ResourceRecord* rr) {
+    memcpy(bytes, rr->type, 2);
+    memcpy((bytes + 2), rr->class, 2);
+    memcpy((bytes + 4), rr->name, strlen(rr->name));
+    memcpy((bytes + 6), &(h->answerCount), 2);
+    memcpy((bytes + 8), &(h->authorityCount), 2);
+    memcpy((bytes + 10), &(h->addtlCount), 2);
+}
+
 int printDnsRequest(BYTE* buffer, size_t bufferSize) {
     if (bufferSize > MAX_BUFFER) {
         printf("error: dns request is larger than allowed max size of 512 bytes");

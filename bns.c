@@ -59,6 +59,36 @@ int initSocket() {
     }
 }
 
+// returns the RCODE
+int answerQuestion(ResourceRecord* ans, Question* q) {
+    // if I can handle the qtype...
+    if (q->qtype == A) {
+        printf("%s", q->qname);
+        printf("\n");
+        // if I know the answer...
+        if (strcmp(q->qname, "www.microsoft.com.") == 0) {
+            // respond with the known answer
+            printf("it worked!\n");
+            memset(ans->name, 0, QNAME_SIZE);
+            memcpy(ans->name, q->qname, QNAME_SIZE);
+            ans->type = 1; // A type
+            ans->class = 1; // IN class
+            ans->ttl = 0;
+            ans->rdlength = 4;
+            ans->rdata[0] = 1;
+            ans->rdata[1] = 2;
+            ans->rdata[2] = 3;
+            ans->rdata[3] = 4;
+            ans->size = sizeof(ResourceRecord) + 3;
+            return 0;
+        }
+
+        return 3; // nxdomain
+    }
+
+    return 4; // not implemented
+}
+
 void listenForUdpQueries() {
     printf("Listening on port %d\n\n", PORT);
 
@@ -96,32 +126,49 @@ void listenForUdpQueries() {
         memset(&h, 0, sizeof(h));
         int hByteRead = parseHeader(&h, buffer);
 
-        // header flags
+        printf("Creating answer...\n\n");
+        printf("Outgoing header:\n");
+
+        // set header flags
         memset(&(h.flags), 0, sizeof(h.flags));
         SET_BITFLAG(h.flags, mask_qr);
         SET_RCODE(h.flags, 3u); // nxdomain
-
-        printf("Creating answer...\n\n");
-        printf("Outgoing header:\n");
         printHeader(&h);
 
-        Header htemp = h;
-        toNetworkOrder(&htemp); // convert multi-byte properties to network order
+        Question q;
+        int qBytesRead = parseQuestion(&q, 1, &buffer[hByteRead]);
 
-        BYTE sh[sizeof(Header)];
-        memset(sh, 0, sizeof(sh));
-        serializeHeader(sh, &htemp);
+        ResourceRecord rr;
+        int responseCode = answerQuestion(&rr, &q);
+        printResourceRecord(&rr);
 
-        // copy the questions to include in response
-        BYTE rawQuestion[512];
-        size_t rawQSize = 0;
-        getRawQuestion(rawQuestion, &rawQSize, &(buffer[12]));
+        SET_RCODE(h.flags, (BYTE)responseCode);
+        h.answerCount = (responseCode == 0) ? 1 : 0;
 
         // populate response buffer
         BYTE response[MAX_BUFFER];
         memset(response, 0, MAX_BUFFER);
+
+        BYTE sh[sizeof(Header)];
+        memset(sh, 0, sizeof(sh));
+        Header htemp = h;
+        toNetworkOrder(&htemp); // convert multi-byte properties to network order
+        serializeHeader(sh, &htemp);
         memcpy(&response, sh, sizeof(sh)); // copy the serialized header
+
+        // include the question in the response
+        BYTE rawQuestion[512];
+        memset(rawQuestion, 0, sizeof(rawQuestion));
+        size_t rawQSize = 0;
+        getRawQuestion(rawQuestion, &rawQSize, &(buffer[12]));
         memcpy(&(response[sizeof(sh)]), rawQuestion, rawQSize); // copy the questions
+
+        if (responseCode == 0) {
+            BYTE serializedRr[MAX_BUFFER];
+            memset(serializedRr, 0, sizeof(MAX_BUFFER));
+            serializeResourceRecord(serializedRr, &rr);
+            
+        }
 
         // printf("Response (network order):\n");
         // printHexStr(response, sizeof(sh) + rawQSize);

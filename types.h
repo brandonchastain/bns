@@ -60,13 +60,18 @@ typedef struct _header {
 
 typedef struct _question {
     char qname[QNAME_SIZE];
-    uint16_t qtype;
-    uint16_t qclass;
+    QTYPE qtype;
+    QCLASS qclass;
 } Question;
 
-typedef struct _answer {
-
-}  Answer;
-
+typedef struct _resourceRecord {
+    char name[QNAME_SIZE];
+    uint16_t type;
+    uint16_t class;
+    uint32_t ttl;
+    uint16_t rdlength;
+    BYTE rdata[MAX_BUFFER];
+    size_t size;
+}  ResourceRecord;
 
 #endif
