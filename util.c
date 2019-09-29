@@ -14,6 +14,13 @@ void toNetworkOrder(Header* h) {
     h->addtlCount = htons(h->addtlCount);
 }
 
+void toNetworkOrderRr(ResourceRecord* rr) {
+    rr->class = htons(rr->class);
+    rr->rdlength = htons(rr->rdlength);
+    rr->ttl = htonl(rr->ttl);
+    rr->type = htons(rr->type);
+}
+
 BYTE getMSBInUTF8(BYTE c) {
     BYTE msb = c & 0b10000000;
     if (msb == 0) {

@@ -140,10 +140,13 @@ void listenForUdpQueries() {
 
         ResourceRecord rr;
         int responseCode = answerQuestion(&rr, &q);
-        printResourceRecord(&rr);
 
-        SET_RCODE(h.flags, (BYTE)responseCode);
-        h.answerCount = (responseCode == 0) ? 1 : 0;
+        if (responseCode == 0) {
+            printResourceRecord(&rr);
+            CLEAR_RCODE(h.flags);
+            h.answerCount = 1;
+            SET_BITFLAG(h.flags, mask_aa);
+        }
 
         // populate response buffer
         BYTE response[MAX_BUFFER];
@@ -178,8 +181,10 @@ void listenForUdpQueries() {
             responseOffset += rrBytes;
             printf("Response resource record:\n");
             printHexStr(serializedRr, rrBytes);
-            printBinStr(serializedRr, rrBytes);
         }
+
+        printHexStr(response, responseOffset);
+        printBinStr(response, responseOffset);
 
         // printf("Response (network order):\n");
         // printHexStr(response, sizeof(sh) + rawQSize);

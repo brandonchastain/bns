@@ -85,7 +85,7 @@ void getRawQuestion(BYTE* rawQuestion, size_t* rawQuestionLen, BYTE* rawRequest)
     *rawQuestionLen = bytesRead;
 }
 
-int getQName(char *qname, size_t qnameSize, BYTE* rawRequest) {
+int getQNameFromLabel(char *qname, size_t qnameSize, BYTE* rawRequest) {
     if (qnameSize < QNAME_SIZE + 1) {
         printf("qname buffer is not large enough.\n");
         return -1;
@@ -117,6 +117,28 @@ int getQName(char *qname, size_t qnameSize, BYTE* rawRequest) {
     return bytesRead;
 }
 
+// assume qname is null-terminated
+int getLabelFromQName(char *label, char* qname) {
+    int i = 0;
+    while (qname[i] != 0) {
+        int j = 0;
+
+        BYTE subdomain[QNAME_SIZE];
+        while (qname[i + j] != '.') {
+            subdomain[j] = qname[i + j];
+            j += 1;
+        }
+
+        subdomain[j] = '\0';
+        label[i] = j;
+        memcpy((label + i + 1), subdomain, j);
+        i += (j + 1);
+    }
+    label[i] = 0;
+
+    return i + 1;
+}
+
 uint16_t parseQuestion(Question* q, uint16_t qcount, BYTE* rawRequest) {
     uint16_t bytesRead = 0;
     for (int i = 0; i < qcount; i++) {
@@ -124,7 +146,7 @@ uint16_t parseQuestion(Question* q, uint16_t qcount, BYTE* rawRequest) {
 
         // qname
         char qname[QNAME_SIZE + 1];
-        int qnameBytes = getQName(qname, sizeof(qname), (rawRequest + bytesRead));
+        int qnameBytes = getQNameFromLabel(qname, sizeof(qname), (rawRequest + bytesRead));
         if (qnameBytes <= 0) {
             printf("ERROR: Unable to parse qname.\n");
             printBinStr(qname, sizeof(qname));
@@ -170,19 +192,25 @@ void printResourceRecord(ResourceRecord* rr) {
 
 // returns # bytes written.
 size_t serializeResourceRecord(BYTE* bytes, ResourceRecord* rr) {
+    char label[QNAME_SIZE];
+    int labelLen = getLabelFromQName(label, rr->name);
+    
+    ResourceRecord temprr = *rr;
+    toNetworkOrderRr(&temprr);
+
     size_t offset = 0;
-    memcpy((bytes + offset), &(rr->name), strlen(rr->name));
-    offset += strlen(rr->name);
-    memcpy((bytes + offset), &(rr->type), 2);
+    memcpy((bytes + offset), label, labelLen);
+    offset += labelLen;
+    memcpy((bytes + offset), &(temprr.type), 2);
     offset += 2;
-    memcpy((bytes + offset), &(rr->class), 2);
+    memcpy((bytes + offset), &(temprr.class), 2);
     offset += 2;
-    memcpy((bytes + offset), &(rr->ttl), 4);
+    memcpy((bytes + offset), &(temprr.ttl), 4);
     offset += 4;
-    memcpy((bytes + offset), &(rr->rdlength), 2);
+    memcpy((bytes + offset), &(temprr.rdlength), 2);
     offset += 2;
 
-    memcpy((bytes + offset), rr->rdata, rr->rdlength);
+    memcpy((bytes + offset), temprr.rdata, rr->rdlength);
     offset += rr->rdlength;
 
     return offset;

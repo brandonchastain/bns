@@ -12,6 +12,7 @@
 #define SET_BITFLAG(flags, mask) (flags |= mask)
 #define CLEAR_BITFLAG(flags, mask) (flags &= ~mask)
 #define GET_OPCODE(flags) ((flags & mask_opcode) >> 11)
+#define CLEAR_RCODE(flags) ((flags) &= ~(mask_rcode))
 #define SET_RCODE(flags, val) (flags |= (val & mask_rcode))
 
 extern const uint16_t mask_qr;
