@@ -7,6 +7,7 @@
 
 int printDnsRequest(BYTE*, size_t);
 void printHeader(Header*);
+void printQuestion(Question*);
 
 uint16_t parseHeader(Header*, BYTE*);
 void printResourceRecord(ResourceRecord*);

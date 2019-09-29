@@ -182,8 +182,8 @@ void printQuestion(Question* q) {
 
 void printResourceRecord(ResourceRecord* rr) {
     printf("RESOURCE RECORD\n");
-    printf("\ttype: %d\n", rr->type);
-    printf("\tclass: %d\n", rr->class);
+    printf("\ttype: %s\n", stringFromQType(rr->type));
+    printf("\tclass: %s\n", stringFromQClass(rr->class));
     printf("\tname: %s\n", rr->name);
     printf("\tttl: %d\n", rr->ttl);
     printf("\trdlength: %d\n", rr->rdlength);
@@ -235,6 +235,4 @@ int printDnsRequest(BYTE* buffer, size_t bufferSize) {
     for (int i = 0; i < h.questionCount; i++) {
         printQuestion(&q[i]);
     }
-
-    printf("%d bytes read.\n\n", hBytesRead + qBytesRead);
 }

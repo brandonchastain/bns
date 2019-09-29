@@ -63,12 +63,9 @@ int initSocket() {
 int answerQuestion(ResourceRecord* ans, Question* q) {
     // if I can handle the qtype...
     if (q->qtype == A) {
-        printf("%s", q->qname);
-        printf("\n");
         // if I know the answer...
         if (strcmp(q->qname, "www.microsoft.com.") == 0) {
             // respond with the known answer
-            printf("it worked!\n");
             memset(ans->name, 0, QNAME_SIZE);
             memcpy(ans->name, q->qname, QNAME_SIZE);
             ans->type = 1; // A type
@@ -110,7 +107,7 @@ void listenForUdpQueries() {
         }
 
         buffer[length] = '\0';
-        printf("%d bytes received.\n", length);
+        printf("%d bytes received:\n", length);
 
         // printf("binary:\n");
         // printBinStr((BYTE*)&buffer, length);
@@ -118,7 +115,6 @@ void listenForUdpQueries() {
         // printHexStr(buffer, length);
 
         // Print the DNS request.
-        printf("Incoming request:\n");
         printDnsRequest(buffer, length);
 
         // Copy the header
@@ -126,14 +122,11 @@ void listenForUdpQueries() {
         memset(&h, 0, sizeof(h));
         int hByteRead = parseHeader(&h, buffer);
 
-        printf("Creating answer...\n\n");
-        printf("Outgoing header:\n");
-
+        printf("Creating answer...\n");
         // set header flags
         memset(&(h.flags), 0, sizeof(h.flags));
         SET_BITFLAG(h.flags, mask_qr);
         SET_RCODE(h.flags, 3u); // nxdomain
-        printHeader(&h);
 
         Question q;
         int qBytesRead = parseQuestion(&q, 1, &buffer[hByteRead]);
@@ -142,10 +135,15 @@ void listenForUdpQueries() {
         int responseCode = answerQuestion(&rr, &q);
 
         if (responseCode == 0) {
-            printResourceRecord(&rr);
             CLEAR_RCODE(h.flags);
             h.answerCount = 1;
             SET_BITFLAG(h.flags, mask_aa);
+        }
+
+        printHeader(&h);
+        printQuestion(&q);
+        if (responseCode == 0) {
+            printResourceRecord(&rr);
         }
 
         // populate response buffer
@@ -169,26 +167,18 @@ void listenForUdpQueries() {
         getRawQuestion(rawQuestion, &rawQSize, &(buffer[12]));
         memcpy(&(response[responseOffset]), rawQuestion, rawQSize); // copy the questions
         responseOffset += rawQSize;
-        printf("responseOffset after rawQ: %d\n", (int)responseOffset);
 
         BYTE serializedRr[MAX_BUFFER];
         memset(serializedRr, 0, sizeof(MAX_BUFFER));
 
         if (responseCode == 0) {
             size_t rrBytes = serializeResourceRecord(serializedRr, &rr);
-            printf("rrBytes: %d\n", (int)rrBytes);
             memcpy(&(response[responseOffset]), serializedRr, rrBytes);
             responseOffset += rrBytes;
-            printf("Response resource record:\n");
-            printHexStr(serializedRr, rrBytes);
         }
-
-        printHexStr(response, responseOffset);
-        printBinStr(response, responseOffset);
 
         // printf("Response (network order):\n");
         // printHexStr(response, sizeof(sh) + rawQSize);
-        printf("responseOffset: %d\n", (int)responseOffset);
         int r = sendto(sockfd, response, responseOffset, MSG_CONFIRM, (const struct sockaddr *)&clientAddr, clientAddrLength);
         if (r < 0) {
             perror("sendto failed");
