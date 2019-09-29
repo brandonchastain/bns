@@ -165,15 +165,27 @@ void printResourceRecord(ResourceRecord* rr) {
     printf("\tname: %s\n", rr->name);
     printf("\tttl: %d\n", rr->ttl);
     printf("\trdlength: %d\n", rr->rdlength);
+    printf("\trdata: %d.%d.%d.%d\n", rr->rdata[0], rr->rdata[1], rr->rdata[2], rr->rdata[3]);
 }
 
-void serializeResourceRecord(BYTE* bytes, ResourceRecord* rr) {
-    memcpy(bytes, rr->type, 2);
-    memcpy((bytes + 2), rr->class, 2);
-    memcpy((bytes + 4), rr->name, strlen(rr->name));
-    memcpy((bytes + 6), &(h->answerCount), 2);
-    memcpy((bytes + 8), &(h->authorityCount), 2);
-    memcpy((bytes + 10), &(h->addtlCount), 2);
+// returns # bytes written.
+size_t serializeResourceRecord(BYTE* bytes, ResourceRecord* rr) {
+    size_t offset = 0;
+    memcpy((bytes + offset), &(rr->name), strlen(rr->name));
+    offset += strlen(rr->name);
+    memcpy((bytes + offset), &(rr->type), 2);
+    offset += 2;
+    memcpy((bytes + offset), &(rr->class), 2);
+    offset += 2;
+    memcpy((bytes + offset), &(rr->ttl), 4);
+    offset += 4;
+    memcpy((bytes + offset), &(rr->rdlength), 2);
+    offset += 2;
+
+    memcpy((bytes + offset), rr->rdata, rr->rdlength);
+    offset += rr->rdlength;
+
+    return offset;
 }
 
 int printDnsRequest(BYTE* buffer, size_t bufferSize) {

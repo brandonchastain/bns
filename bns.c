@@ -154,26 +154,37 @@ void listenForUdpQueries() {
         Header htemp = h;
         toNetworkOrder(&htemp); // convert multi-byte properties to network order
         serializeHeader(sh, &htemp);
-        memcpy(&response, sh, sizeof(sh)); // copy the serialized header
+
+        size_t responseOffset = 0;
+        memcpy(response, sh, sizeof(sh)); // copy the serialized header
+        responseOffset += sizeof(sh);
 
         // include the question in the response
         BYTE rawQuestion[512];
         memset(rawQuestion, 0, sizeof(rawQuestion));
         size_t rawQSize = 0;
         getRawQuestion(rawQuestion, &rawQSize, &(buffer[12]));
-        memcpy(&(response[sizeof(sh)]), rawQuestion, rawQSize); // copy the questions
+        memcpy(&(response[responseOffset]), rawQuestion, rawQSize); // copy the questions
+        responseOffset += rawQSize;
+        printf("responseOffset after rawQ: %d\n", (int)responseOffset);
+
+        BYTE serializedRr[MAX_BUFFER];
+        memset(serializedRr, 0, sizeof(MAX_BUFFER));
 
         if (responseCode == 0) {
-            BYTE serializedRr[MAX_BUFFER];
-            memset(serializedRr, 0, sizeof(MAX_BUFFER));
-            serializeResourceRecord(serializedRr, &rr);
-            
+            size_t rrBytes = serializeResourceRecord(serializedRr, &rr);
+            printf("rrBytes: %d\n", (int)rrBytes);
+            memcpy(&(response[responseOffset]), serializedRr, rrBytes);
+            responseOffset += rrBytes;
+            printf("Response resource record:\n");
+            printHexStr(serializedRr, rrBytes);
+            printBinStr(serializedRr, rrBytes);
         }
 
         // printf("Response (network order):\n");
         // printHexStr(response, sizeof(sh) + rawQSize);
-
-        int r = sendto(sockfd, response, sizeof(sh) + rawQSize, MSG_CONFIRM, (const struct sockaddr *)&clientAddr, clientAddrLength);
+        printf("responseOffset: %d\n", (int)responseOffset);
+        int r = sendto(sockfd, response, responseOffset, MSG_CONFIRM, (const struct sockaddr *)&clientAddr, clientAddrLength);
         if (r < 0) {
             perror("sendto failed");
             break;
