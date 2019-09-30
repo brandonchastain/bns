@@ -13,7 +13,7 @@
 #include "common.h"
 #include "util.h"
 
-#define PORT 50037 
+#define PORT 53
 #define MAX_BUFFER_SIZE 1024
 
 static volatile sig_atomic_t ctrlCReceived = 0;
