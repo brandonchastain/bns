@@ -13,7 +13,8 @@
 #define PORT 50037
 #define MAX_BUFFER_SIZE 10
 
-int main(void) {
+int main(int argc, char **argv) {
+
     int sockfd;
 
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {

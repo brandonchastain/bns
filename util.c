@@ -54,7 +54,7 @@ void tobinstr(BYTE* data, size_t dataSize, char* output) {
 
 // easy api to just print a binary string. Also shows example usage of tobinstr.
 void printBinStr(unsigned char* buffer, size_t bufferSize) {
-    unsigned char binstr[(bufferSize * 9)]; // 8 bits printed per item in the buffer, plus null terminator
+    char binstr[(bufferSize * 9)]; // 8 bits printed per item in the buffer, plus null terminator
     tobinstr(buffer, bufferSize, binstr);
     printf("%s\n", binstr);
 }

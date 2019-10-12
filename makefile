@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-g -I.
+CFLAGS=-Wall -g -I.
 DEPS = types.h util.h common.h
 OBJ = bns.o util.o common.o
 CLIENTOBJ = bnsclient.o util.o common.o

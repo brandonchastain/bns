@@ -5,7 +5,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-int printDnsRequest(BYTE*, size_t);
+void printDnsRequest(BYTE*, size_t);
 void printHeader(Header*);
 void printQuestion(Question*);
 
