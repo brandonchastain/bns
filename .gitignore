@@ -1,9 +1,16 @@
+# binaries
 *.o
 *.out
-
-.vscode/*
-.vscode
-
+bin/*
+bin
+obj/*
+obj
 bns
 bnsclient
 test
+
+# IDEs
+.vscode/*
+.vscode
+.vs/*
+.vs
