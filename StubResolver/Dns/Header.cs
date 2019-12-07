@@ -33,6 +33,7 @@ namespace Dns
             {
                 throw new Exception("Header is too small");
             }
+
             var header = new Header();
 
             header.id = (ushort)(buffer[0] << 8);

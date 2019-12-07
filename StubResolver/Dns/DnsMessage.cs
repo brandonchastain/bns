@@ -21,6 +21,14 @@ namespace Dns
         {
             var result = new DnsMessage();
             result.header = Header.Parse(buffer);
+
+            var msgNoHeader = new List<byte>(); 
+            for (int i = 13; i < buffer.Length; i++)
+            {
+                msgNoHeader.Add(buffer[i]);
+            }
+
+            result.question = Question.Parse(msgNoHeader.ToArray());
             return result;
         }
 

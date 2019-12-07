@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 using Dns;
 
 namespace Core
@@ -10,7 +11,7 @@ namespace Core
     {
         private const int listenPort = 10053;
 
-        public void StartListener()
+        public async Task StartListener()
         {
             var listener = new UdpClient(listenPort);
 
@@ -20,12 +21,13 @@ namespace Core
                 {
                     Console.WriteLine("Waiting for broadcast");
 
-                    IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, listenPort);
-                    var bytes = listener.Receive(ref endpoint);
+                    //synchronous
+                    //IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, listenPort);
+                    //var bytes = listener.Receive(ref endpoint);
 
-                    // var result = await listener.ReceiveAsync();
-                    // var bytes = result.Buffer;
-                    // var endpoint = result.RemoteEndPoint;
+                    var result = await listener.ReceiveAsync();
+                    var bytes = result.Buffer;
+                    var endpoint = result.RemoteEndPoint;
 
                     Console.WriteLine($"Received broadcast from {endpoint} :");
                     Console.WriteLine($"{Encoding.ASCII.GetString(bytes, 0, bytes.Length)}");
@@ -37,6 +39,7 @@ namespace Core
             }
             catch (SocketException se)
             {
+                Console.WriteLine("SocketException:");
                 Console.WriteLine(se);
             }
             finally
