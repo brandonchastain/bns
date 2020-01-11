@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Dns;
 
@@ -23,11 +24,10 @@ namespace Core
             return dnsMessage;
         }
 
-        public async Task StartListener()
+        public async Task StartListener(CancellationToken cancellationToken)
         {
-            Console.WriteLine("Waiting for broadcast");
-            await this.listener.ListenAndProcessResponses();
-            Console.WriteLine("Listener stopped.");
+            Console.WriteLine("Listening for DNS queries...");
+            await this.listener.ListenAndProcessDatagrams(cancellationToken);
         }
     }
 }

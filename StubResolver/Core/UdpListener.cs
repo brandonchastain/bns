@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Core
@@ -21,38 +22,58 @@ namespace Core
             this.messageQueue = new List<UdpMessage>();
         }
 
-        public async Task ListenAndProcessResponses()
+        public async Task ListenAndProcessDatagrams(CancellationToken cancellationToken)
         {
             var listener = new UdpClient(listenPort);
 
-            try
+            var taskCompletionSource = new TaskCompletionSource<bool>();
+            using (cancellationToken.Register(() => taskCompletionSource.TrySetResult(true)))
             {
-                while (true)
+                try
                 {
-                    var result = await listener.ReceiveAsync();
-                    var bytes = result.Buffer;
-                    var endpoint = result.RemoteEndPoint;
-
-                    Console.WriteLine($"Received message from {endpoint} :");
-                    Console.WriteLine($"{Encoding.ASCII.GetString(bytes, 0, bytes.Length)}");
-
-                    var response = this.processMessage(new UdpMessage(bytes, endpoint));
-                    if (response == null)
+                    while (true)
                     {
-                        Console.WriteLine($"An error occurred while processing the UDP message.");
-                    }
+                        var receiveTask = listener.ReceiveAsync();
+                        var cancelTask = taskCompletionSource.Task;
 
-                    var responseBytes = response.ToByteArray();
-                    await listener.SendAsync(responseBytes, responseBytes.Length, endpoint);
+                        var completedTask = await Task.WhenAny(receiveTask, cancelTask);
+
+                        if (completedTask == cancelTask)
+                        {
+                            // Console.WriteLine("Task cancellation requested.");
+                            listener.Close();
+                            cancellationToken.ThrowIfCancellationRequested();
+                        }
+
+                        var udpMessage = await receiveTask;
+                        var bytes = udpMessage.Buffer;
+                        var endpoint = udpMessage.RemoteEndPoint;
+
+                        Console.WriteLine($"Received message from {endpoint} :");
+                        Console.WriteLine($"{Encoding.ASCII.GetString(bytes, 0, bytes.Length)}");
+
+                        var response = this.processMessage(new UdpMessage(bytes, endpoint));
+                        if (response == null)
+                        {
+                            Console.WriteLine($"An error occurred while processing the UDP message.");
+                        }
+
+                        var responseBytes = response.ToByteArray();
+                        await listener.SendAsync(responseBytes, responseBytes.Length, endpoint);
+                    }
                 }
-            }
-            catch (SocketException se)
-            {
-                Console.WriteLine(se);
-            }
-            finally
-            {
-                listener.Close();
+                catch (OperationCanceledException)
+                {
+                    // close the listener and exit
+                }
+                catch (SocketException se)
+                {
+                    Console.WriteLine(se);
+                }
+                finally
+                {
+                    listener.Close();
+                }
             }
         }
 
