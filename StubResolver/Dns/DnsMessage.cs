@@ -23,7 +23,7 @@ namespace Dns
             result.header = Header.Parse(buffer);
 
             var msgNoHeader = new List<byte>(); 
-            for (int i = 13; i < buffer.Length; i++)
+            for (int i = 12; i < buffer.Length; i++)
             {
                 msgNoHeader.Add(buffer[i]);
             }
@@ -35,6 +35,11 @@ namespace Dns
         public override string ToString()
         {
             return this.header.ToString();
+        }
+
+        public byte[] ToByteArray()
+        {
+            return this.header.ToByteArray();
         }
     }
 }

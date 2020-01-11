@@ -8,19 +8,19 @@ namespace Dns
     {
         private const int sizeInBytes = 12;
 
-        ushort id;
-        bool isResponse;
-        HeaderOpCode opcode; // last 4 bits only
-        bool isAuthoritativeAnswer;
-        bool isTruncated;
-        bool recursionDesired;
-        bool recursionAvailable;
-        byte z; // always 0
-        ResponseCode rcode;
-        ushort queryCount;
-        ushort answerCount;
-        ushort authorityCount;
-        ushort addtlCount;
+        private ushort id;
+        private bool isResponse;
+        private HeaderOpCode opcode; // last 4 bits only
+        private bool isAuthoritativeAnswer;
+        private bool isTruncated;
+        private bool recursionDesired;
+        private bool recursionAvailable;
+        private byte z;
+        private ResponseCode rcode;
+        private ushort queryCount;
+        private ushort answerCount;
+        private ushort authorityCount;
+        private ushort addtlCount;
 
         private Header()
         {
@@ -41,7 +41,7 @@ namespace Dns
 
             header.isResponse = (buffer[2] & 0x80) != 0;
 
-            var opcodeNum = (buffer[2] & 0x78) >> 3;
+            var opcodeNum = (buffer[2] & 0x78) >> 3; //01111000
             header.opcode = (HeaderOpCode)opcodeNum;
 
             header.isAuthoritativeAnswer = (buffer[2] & 0x04) != 0;
@@ -63,6 +63,37 @@ namespace Dns
             header.addtlCount |= buffer[11];
 
             return header;
+        }
+
+        public byte[] ToByteArray()
+        {
+            var buffer = new byte[sizeInBytes];
+
+            buffer[0] = (byte)(this.id >> 8);
+            buffer[1] = (byte)this.id;
+
+            // Set is response flag to 1
+            buffer[2] |= 0x80;
+
+            var opcodeNum = (ushort)this.opcode;
+            buffer[2] |= (byte)(opcodeNum << 3);
+
+            // set aa flag to 0 since this is a recursive answer
+            buffer[2] &= 0xfb; //11111011
+
+            // set isTruncated flag to 0
+            buffer[2] &= 0xfd; //11111101
+
+            // set rd flag
+            if (this.recursionDesired)
+            {
+                buffer[2] &= 0xfe;
+            }
+
+            // set recursionAvailable flag to 1
+            buffer[3] |= 0x80;
+
+            return buffer;
         }
 
         public override string ToString()

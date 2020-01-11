@@ -9,45 +9,25 @@ namespace Core
 {
     public class StubResolver
     {
-        private const int listenPort = 10053;
+        private readonly UdpListener listener;
+
+        public StubResolver(ushort listenPort = 10053)
+        {
+            this.listener = new UdpListener(ProcessUdpMessage, listenPort);
+        }
+
+        private static DnsMessage ProcessUdpMessage(UdpMessage udpMessage)
+        {
+            var dnsMessage = DnsMessage.Parse(udpMessage.Buffer);
+            Console.WriteLine(dnsMessage);
+            return dnsMessage;
+        }
 
         public async Task StartListener()
         {
-            var listener = new UdpClient(listenPort);
-
-            try
-            {
-                while (true)
-                {
-                    Console.WriteLine("Waiting for broadcast");
-
-                    //synchronous
-                    //IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, listenPort);
-                    //var bytes = listener.Receive(ref endpoint);
-
-                    var result = await listener.ReceiveAsync();
-                    var bytes = result.Buffer;
-                    var endpoint = result.RemoteEndPoint;
-
-                    Console.WriteLine($"Received broadcast from {endpoint} :");
-                    Console.WriteLine($"{Encoding.ASCII.GetString(bytes, 0, bytes.Length)}");
-
-                    //todo: queue query and process async/in another thread
-                    var query = DnsMessage.Parse(bytes);
-                    Console.WriteLine(query.ToString());
-                }
-            }
-            catch (SocketException se)
-            {
-                Console.WriteLine("SocketException:");
-                Console.WriteLine(se);
-            }
-            finally
-            {
-                listener.Close();
-            }
+            Console.WriteLine("Waiting for broadcast");
+            await this.listener.ListenAndProcessResponses();
+            Console.WriteLine("Listener stopped.");
         }
-
-
     }
 }

@@ -5,12 +5,12 @@ using Microsoft.Extensions.Configuration;
 
 namespace StubResolverApp
 {
-    class Program
+    public class Program
     {
-        static async Task Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var rr = new StubResolver();
-            await rr.StartListener();
+            await rr.StartListener().ConfigureAwait(false);
         }
     }
 }
