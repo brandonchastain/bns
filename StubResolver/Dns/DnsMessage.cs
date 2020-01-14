@@ -6,11 +6,11 @@ namespace Dns
 {
     public class DnsMessage
     {
-        Header header;
-        Question question;
-        List<ResourceRecord> answer;
-        List<ResourceRecord> authority;
-        List<ResourceRecord> additional;
+        private Header Header { get; set; }
+        private Question Question { get; set; }
+        private List<ResourceRecord> Answer { get; set; }
+        private List<ResourceRecord> Authority { get; set; }
+        private List<ResourceRecord> Additional { get; set; }
 
         private DnsMessage()
         {
@@ -20,7 +20,7 @@ namespace Dns
         public static DnsMessage Parse(byte[] buffer)
         {
             var result = new DnsMessage();
-            result.header = Header.Parse(buffer);
+            result.Header = Header.Parse(buffer);
 
             var msgNoHeader = new List<byte>(); 
             for (int i = 12; i < buffer.Length; i++)
@@ -28,18 +28,20 @@ namespace Dns
                 msgNoHeader.Add(buffer[i]);
             }
 
-            result.question = Question.Parse(msgNoHeader.ToArray());
+            result.Question = Question.FromBytes(msgNoHeader.ToArray(), out var _);
+            var b = new DnsQuestionSerializer().SerializeQuestion(result.Question);
+            HexPrinter.PrintBufferHex(b, b.Length);
             return result;
         }
 
         public override string ToString()
         {
-            return this.header.ToString();
+            return this.Header.ToString() + "\n" + this.Question.ToString();
         }
 
         public byte[] ToByteArray()
         {
-            return this.header.ToByteArray();
+            return this.Header.ToByteArray();
         }
     }
 }

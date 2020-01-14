@@ -1,33 +1,41 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Dns
 {
-    class Question
+    public class Question
     {
         private const int MaxQnameSize = 255; // rfc 1035
 
-        private Question()
-        {
-
-        }
+        private static DnsQuestionSerializer serializer = new DnsQuestionSerializer();
 
         public String QName { get; set; }
         public RecordType QType { get; set; }
         public RecordClass QClass { get; set; }
 
-        public static Question Parse(byte[] buffer)
+        public Question() { }
+
+        public static Question FromBytes(byte[] buffer, out int bytesRead)
         {
-            buffer = buffer ?? throw new ArgumentNullException(nameof(buffer));
-
-            Question q = new Question();
-            //q.QName = ParseQuestionName(buffer, out int bitsRead);
-            //byte[] rem = TrimQName(buffer, bitsRead);
-            //q.QType = ParseQueryType(buffer, bitsRead);
-            //q.QClass = ParseQueryClass(buffer, bitsRead);
-
+            var q = serializer.DeserializeBytes(buffer, out int questionBytesRead);
+            bytesRead = questionBytesRead;
             return q;
+        }
+
+        public override string ToString()
+        {
+            return this.QName + "\n" +
+                   this.QType.ToString() + "\n" +
+                   this.QClass.ToString();
+        }
+
+        public byte[] ToByteArray()
+        {
+            var buffer = serializer.SerializeQuestion(this);
+            HexPrinter.PrintBufferHex(buffer, buffer.Length);
+            return buffer;
         }
     }
 }
