@@ -51,8 +51,6 @@ namespace Dns
 
             Question q = new Question();
             q.QName = ParseQuestionName(buffer, out int qNameBytesRead);
-            Console.WriteLine($"{qNameBytesRead} bytes read in qname");
-            //byte[] rem = TrimQName(buffer, bitsRead);
             q.QType = ParseQueryType(buffer, qNameBytesRead);
             q.QClass = ParseQueryClass(buffer, qNameBytesRead + 2);
             bytesRead = qNameBytesRead + 4;
@@ -86,8 +84,7 @@ namespace Dns
 
         private RecordType ParseQueryType(byte[] buffer, int index)
         {
-            int result = 0;
-            result = buffer[index + 1];
+            int result = buffer[index + 1];
             result |= (buffer[index] << 8);
             result -= 1;
             return (RecordType)result;
@@ -95,8 +92,7 @@ namespace Dns
 
         private RecordClass ParseQueryClass(byte[] buffer, int index)
         {
-            int result = 0;
-            result = buffer[index + 1];
+            int result = buffer[index + 1];
             result |= (buffer[index] << 8);
             result -= 1;
             return (RecordClass)result;

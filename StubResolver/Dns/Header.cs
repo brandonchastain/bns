@@ -4,23 +4,23 @@ using System.Text;
 
 namespace Dns
 {
-    class Header
+    public class Header
     {
         private const int sizeInBytes = 12;
 
-        private ushort Id { get; set; }
-        private bool IsResponse { get; set; }
-        private HeaderOpCode Opcode { get; set; } // last 4 bits only
-        private bool IsAuthoritativeAnswer { get; set; }
-        private bool IsTruncated { get; set; }
-        private bool RecursionDesired { get; set; }
-        private bool RecursionAvailable { get; set; }
-        private byte Z { get; set; }
-        private ResponseCode Rcode { get; set; }
-        private ushort QueryCount { get; set; }
-        private ushort AnswerCount { get; set; }
-        private ushort AuthorityCount { get; set; }
-        private ushort AddtlCount { get; set; }
+        public ushort Id { get; set; }
+        public bool IsResponse { get; set; }
+        public HeaderOpCode Opcode { get; set; } // last 4 bits only
+        public bool IsAuthoritativeAnswer { get; set; }
+        public bool IsTruncated { get; set; }
+        public bool RecursionDesired { get; set; }
+        public bool RecursionAvailable { get; set; }
+        public byte Z { get; set; }
+        public ResponseCode Rcode { get; set; }
+        public ushort QueryCount { get; set; }
+        public ushort AnswerCount { get; set; }
+        public ushort AuthorityCount { get; set; }
+        public ushort AddtlCount { get; set; }
 
         private Header()
         {
@@ -99,9 +99,6 @@ namespace Dns
             // RCode
             var rcodeNum = (byte)this.Rcode;
             buffer[3] |= rcodeNum;
-
-            this.QueryCount = 1;
-            this.AnswerCount = 1;
 
             // Counts of remaining sections
             buffer[4] = (byte)(this.QueryCount >> 8);

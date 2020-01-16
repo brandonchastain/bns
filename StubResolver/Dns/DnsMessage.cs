@@ -41,7 +41,12 @@ namespace Dns
 
         public byte[] ToByteArray()
         {
-            return this.Header.ToByteArray();
+            var header = this.Header.ToByteArray();
+            var body = this.Question.ToByteArray();
+            var all = new List<byte>(header);
+            all.AddRange(body);
+
+            return all.ToArray();
         }
     }
 }
