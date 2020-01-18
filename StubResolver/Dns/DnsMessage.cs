@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dns.RecordData;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -8,13 +9,13 @@ namespace Dns
     {
         private Header Header { get; set; }
         private Question Question { get; set; }
-        private List<ResourceRecord> Answer { get; set; }
+        private List<ResourceRecord> Answers { get; set; }
         private List<ResourceRecord> Authority { get; set; }
         private List<ResourceRecord> Additional { get; set; }
 
         private DnsMessage()
         {
-
+            this.Answers = new List<ResourceRecord>();
         }
 
         public static DnsMessage Parse(byte[] buffer)
@@ -34,6 +35,12 @@ namespace Dns
             return result;
         }
 
+        public void AddAnswer(ResourceRecord record)
+        {
+            this.Answers.Add(record);
+            this.Header.AnswerCount++;
+        }
+
         public override string ToString()
         {
             return this.Header.ToString() + "\n" + this.Question.ToString();
@@ -45,6 +52,11 @@ namespace Dns
             var body = this.Question.ToByteArray();
             var all = new List<byte>(header);
             all.AddRange(body);
+
+            foreach (var ans in this.Answers)
+            {
+                all.AddRange(ans.ToByteArray());
+            }
 
             return all.ToArray();
         }

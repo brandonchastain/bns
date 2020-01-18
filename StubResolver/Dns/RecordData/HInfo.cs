@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Dns.RData
+namespace Dns.RecordData
 {
-    public class HInfoRData
+    public class HInfo
     {
         string machineName; // max 40 characters
         string osName; // max 40 characters

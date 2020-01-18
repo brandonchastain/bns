@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Dns;
+using Dns.RecordData;
 
 namespace Core
 {
@@ -21,7 +22,28 @@ namespace Core
         {
             var dnsMessage = DnsMessage.Parse(udpMessage.Buffer);
             Console.WriteLine(dnsMessage);
+
+            Resolve(dnsMessage);
+
             return dnsMessage;
+        }
+
+        private static void Resolve(DnsMessage dnsMessage)
+        {
+            var rr = new CNameRecord()
+            {
+                Name = "www.google1.com.",
+                TimeToLive = 69,
+                CName = "www.google.com."
+            };
+
+            dnsMessage.AddAnswer(rr);
+            //dnsMessage.AddAnswer(new ARecord()
+            //{
+            //    Address = new byte[] { 0x00, 0x01, 0x02, 0x03 },
+            //    Name = "www.google1.com",
+            //    TimeToLive = 77
+            //});
         }
 
         public async Task StartListener(CancellationToken cancellationToken)

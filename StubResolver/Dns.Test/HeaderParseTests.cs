@@ -26,5 +26,14 @@ namespace Dns.Test
             Assert.AreEqual(0, header.AuthorityCount);
             Assert.AreEqual(0, header.AddtlCount);
         }
+
+        [Test]
+        public void TestSerializeHeader()
+        {
+            var b = new byte[] { 0xdf, 0xa8, 0x80, 0xa0, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00 };
+            var header = Header.Parse(b);
+            var newB = header.ToByteArray();
+            Assert.AreEqual(b, newB);
+        }
     }
 }
