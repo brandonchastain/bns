@@ -12,12 +12,11 @@ namespace StubResolverApp
 
         public static async Task Main(string[] args)
         {
-            Console.Clear();
-            Console.CancelKeyPress += new ConsoleCancelEventHandler(sigintHandler);
-
+            var rr = new StubResolver();
             var cancellationToken = cts.Token;
 
-            var rr = new StubResolver();
+            Console.CancelKeyPress += new ConsoleCancelEventHandler(sigintHandler);
+
             await rr.StartListener(cancellationToken).ConfigureAwait(false);
         }
 

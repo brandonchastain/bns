@@ -34,7 +34,6 @@ namespace Dns
         public byte[] ToByteArray()
         {
             var buffer = serializer.SerializeQuestion(this);
-            HexPrinter.PrintBufferHex(buffer, buffer.Length);
             return buffer;
         }
     }

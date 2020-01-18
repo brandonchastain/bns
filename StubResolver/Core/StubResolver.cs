@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Dns;
-using Dns.RecordData;
+using Dns.ResourceRecords;
 
 namespace Core
 {
@@ -33,11 +33,12 @@ namespace Core
             var rr = new CNameRecord()
             {
                 Name = "www.google1.com.",
-                TimeToLive = 69,
+                TimeToLive = 33,
                 CName = "www.google.com."
             };
 
             dnsMessage.AddAnswer(rr);
+
             //dnsMessage.AddAnswer(new ARecord()
             //{
             //    Address = new byte[] { 0x00, 0x01, 0x02, 0x03 },

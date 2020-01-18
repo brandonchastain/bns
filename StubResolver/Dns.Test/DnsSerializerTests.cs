@@ -50,7 +50,6 @@ namespace Dns.Test
             var b = new byte[] { 0x03, 0x77, 0x77, 0x77, 0x09, 0x6d, 0x69, 0x63, 0x72, 0x6f, 0x73, 0x6f, 0x66, 0x74, 0x03, 0x63, 0x6f, 0x6d, 0x00, 0x00, 0x01, 0x00, 0x01 };
             var bHex = HexPrinter.ToHexString(b, b.Length);
             var sHex = HexPrinter.ToHexString(serializedQuestion, serializedQuestion.Length);
-
             Assert.AreEqual(bHex, sHex);
             Assert.AreEqual(b.Length, serializedQuestion.Length);
         }

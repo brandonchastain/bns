@@ -1,9 +1,8 @@
-﻿using Dns.RecordData;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Dns
+namespace Dns.ResourceRecords
 {
     public abstract class ResourceRecord
     {
