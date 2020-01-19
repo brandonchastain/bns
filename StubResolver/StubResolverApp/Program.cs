@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Core;
-using Microsoft.Extensions.Configuration;
+using Bns.StubResolver.Core;
 
 namespace StubResolverApp
 {

@@ -13,6 +13,8 @@ namespace Dns.ResourceRecords
 
         public RecordClass GetRecordClass() => RecordClass.IN;
 
+        // Subclasses should override & call this method before adding record-specific
+        // data to the output.
         public virtual byte[] ToByteArray()
         {
             var bytes = new List<byte>();

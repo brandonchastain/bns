@@ -1,11 +1,10 @@
-﻿using Dns.ResourceRecords;
-using System;
+﻿using Bns.StubResolver.Udp.Contracts;
+using Dns.ResourceRecords;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Dns
 {
-    public class DnsMessage
+    public class DnsMessage : IByteSerializable
     {
         private Header Header { get; set; }
         private Question Question { get; set; }
@@ -31,7 +30,7 @@ namespace Dns
 
             result.Question = Question.FromBytes(msgNoHeader.ToArray(), out var _);
             var b = new DnsQuestionSerializer().SerializeQuestion(result.Question);
-            HexPrinter.PrintBufferHex(b, b.Length);
+            // HexPrinter.PrintBufferHex(b, b.Length);
             return result;
         }
 

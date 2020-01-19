@@ -1,13 +1,12 @@
-﻿using System;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using Bns.StubResolver.Udp;
+using Bns.StubResolver.Udp.Contracts;
 using Dns;
 using Dns.ResourceRecords;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace Core
+namespace Bns.StubResolver.Core
 {
     public class StubResolver
     {
@@ -18,9 +17,10 @@ namespace Core
             this.listener = new UdpListener(ProcessUdpMessage, listenPort);
         }
 
-        private static DnsMessage ProcessUdpMessage(UdpMessage udpMessage)
+        private static IByteSerializable ProcessUdpMessage(UdpMessage udpMessage)
         {
             var dnsMessage = DnsMessage.Parse(udpMessage.Buffer);
+            
             Console.WriteLine(dnsMessage);
 
             Resolve(dnsMessage);
@@ -50,7 +50,7 @@ namespace Core
         public async Task StartListener(CancellationToken cancellationToken)
         {
             Console.WriteLine("Listening for DNS queries...");
-            await this.listener.ListenAndProcessDatagrams(cancellationToken);
+            await this.listener.ListenAndProcessDatagrams(cancellationToken).ConfigureAwait(false);
         }
     }
 }

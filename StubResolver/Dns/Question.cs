@@ -26,9 +26,10 @@ namespace Dns
 
         public override string ToString()
         {
-            return this.QName + "\n" +
-                   this.QType.ToString() + "\n" +
-                   this.QClass.ToString();
+            return "Question: \n" +
+                   $"[qname] : {this.QName} \n" +
+                   $"[qtype] : {this.QType} \n" +
+                   $"[qclass] : {this.QClass} \n";
         }
 
         public byte[] ToByteArray()

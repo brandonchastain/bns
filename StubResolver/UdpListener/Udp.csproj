@@ -5,12 +5,11 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <ApplicationIcon />
     <StartupObject />
-    <RootNamespace>Bns.StubResolver.Core</RootNamespace>
+    <RootNamespace>Bns.StubResolver.Udp</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Dns\Dns.csproj" />
-    <ProjectReference Include="..\UdpListener\Udp.csproj" />
+    <ProjectReference Include="..\Udp.Contracts\Udp.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

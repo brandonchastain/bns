@@ -1,22 +1,21 @@
-﻿using Dns;
+﻿using Bns.StubResolver.Udp.Contracts;
 using System;
-using System.Collections.Generic;
-using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Core
+namespace Bns.StubResolver.Udp
 {
     public class UdpListener
     {
         private readonly int listenPort;
-        private Func<UdpMessage, DnsMessage> processMessage;
+        private ProcessMessage processMessageCallback;
 
-        public UdpListener(Func<UdpMessage, DnsMessage> processMessage, ushort port)
+        public delegate IByteSerializable ProcessMessage(UdpMessage message);
+
+        public UdpListener(ProcessMessage processMessage, ushort port)
         {
-            this.processMessage = processMessage ?? throw new ArgumentNullException(nameof(processMessage));
+            this.processMessageCallback = processMessage ?? throw new ArgumentNullException(nameof(processMessage));
             this.listenPort = port;
         }
 
@@ -33,7 +32,7 @@ namespace Core
                     {
                         var receiveTask = listener.ReceiveAsync();
                         var cancelTask = taskCompletionSource.Task;
-                        var completedTask = await Task.WhenAny(receiveTask, cancelTask);
+                        var completedTask = await Task.WhenAny(receiveTask, cancelTask).ConfigureAwait(false);
 
                         if (completedTask == cancelTask)
                         {
@@ -45,14 +44,14 @@ namespace Core
                         var bytes = udpMessage.Buffer;
                         var endpoint = udpMessage.RemoteEndPoint;
 
-                        var response = this.processMessage(new UdpMessage(bytes, endpoint));
+                        var response = this.processMessageCallback(new UdpMessage(bytes, endpoint));
                         if (response == null)
                         {
                             Console.WriteLine($"An error occurred while processing the UDP message.");
                         }
 
                         var responseBytes = response.ToByteArray();
-                        await listener.SendAsync(responseBytes, responseBytes.Length, endpoint);
+                        await listener.SendAsync(responseBytes, responseBytes.Length, endpoint).ConfigureAwait(false);
                     }
                 }
                 catch (OperationCanceledException)
