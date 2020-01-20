@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Bns.StubResolver.Dns.Serialization;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Dns.ResourceRecords
+namespace Bns.StubResolver.Dns.ResourceRecords
 {
     public abstract class ResourceRecord
     {

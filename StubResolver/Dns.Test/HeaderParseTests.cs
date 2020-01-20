@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using Bns.StubResolver.Dns;
+using NUnit.Framework;
 using System;
 using System.Diagnostics;
 

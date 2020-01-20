@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.Test", "Dns.Test\Dns.Te
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Udp", "UdpListener\Udp.csproj", "{40B89BA1-BA72-4B3B-9CCC-787507552F5F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Udp.Contracts", "Udp.Contracts\Udp.Contracts.csproj", "{B7C8CCAC-7999-41B0-AF90-89F881A9547F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Udp.Contracts", "Udp.Contracts\Udp.Contracts.csproj", "{B7C8CCAC-7999-41B0-AF90-89F881A9547F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{1776E3D1-A2F6-41C4-8BC7-9D15D4801860}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{B7C8CCAC-7999-41B0-AF90-89F881A9547F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7C8CCAC-7999-41B0-AF90-89F881A9547F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7C8CCAC-7999-41B0-AF90-89F881A9547F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1776E3D1-A2F6-41C4-8BC7-9D15D4801860}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1776E3D1-A2F6-41C4-8BC7-9D15D4801860}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1776E3D1-A2F6-41C4-8BC7-9D15D4801860}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1776E3D1-A2F6-41C4-8BC7-9D15D4801860}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

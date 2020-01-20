@@ -1,3 +1,6 @@
+using Bns.StubResolver.Common;
+using Bns.StubResolver.Dns;
+using Bns.StubResolver.Dns.Serialization;
 using NUnit.Framework;
 using System;
 

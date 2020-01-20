@@ -1,8 +1,8 @@
 ﻿using Bns.StubResolver.Udp.Contracts;
-using Dns.ResourceRecords;
+using Bns.StubResolver.Dns.ResourceRecords;
 using System.Collections.Generic;
 
-namespace Dns
+namespace Bns.StubResolver.Dns
 {
     public class DnsMessage : IByteSerializable
     {
@@ -29,8 +29,10 @@ namespace Dns
             }
 
             result.Question = Question.FromBytes(msgNoHeader.ToArray(), out var _);
-            var b = new DnsQuestionSerializer().SerializeQuestion(result.Question);
+            
+            // var b = new DnsQuestionSerializer().SerializeQuestion(result.Question);
             // HexPrinter.PrintBufferHex(b, b.Length);
+
             return result;
         }
 
@@ -38,6 +40,18 @@ namespace Dns
         {
             this.Answers.Add(record);
             this.Header.AnswerCount++;
+        }
+
+        public void AddAuthority(ResourceRecord record)
+        {
+            this.Authority.Add(record);
+            this.Header.AuthorityCount++;
+        }
+
+        public void AddAdditional(ResourceRecord record)
+        {
+            this.Additional.Add(record);
+            this.Header.AddtlCount++;
         }
 
         public override string ToString()

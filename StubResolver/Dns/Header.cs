@@ -1,12 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Newtonsoft.Json.Linq;
+using System;
+using Newtonsoft.Json;
 using System.Text;
+using Bns.StubResolver.Dns.Serialization;
 
-namespace Dns
+namespace Bns.StubResolver.Dns
 {
     public class Header
     {
         private const int sizeInBytes = 12;
+
+        private IJsonSerializer jsonSerializer;
 
         public ushort Id { get; set; }
         public bool IsResponse { get; set; }
@@ -22,9 +26,9 @@ namespace Dns
         public ushort AuthorityCount { get; set; }
         public ushort AddtlCount { get; set; }
 
-        private Header()
+        public Header()
         {
-
+            this.jsonSerializer = new DnsJsonSerializer();
         }
 
         public static Header Parse(byte[] buffer)
@@ -113,23 +117,14 @@ namespace Dns
             return buffer;
         }
 
+        public string ToJson()
+        {
+            return this.jsonSerializer.ToJson(this);
+        }
+
         public override string ToString()
         {
-            var sb = new StringBuilder();
-            sb.AppendLine("Header:");
-            sb.AppendLine($"[id] : {this.Id}");
-            sb.AppendLine($"[isResponse] : {this.IsResponse}");
-            sb.AppendLine($"[isAuthoritative] : {this.IsAuthoritativeAnswer}");
-            sb.AppendLine($"[isTruncated] : {this.IsTruncated}");
-            sb.AppendLine($"[recursionDesired] : {this.RecursionDesired}");
-            sb.AppendLine($"[recursionAvailable] : {this.RecursionAvailable}");
-            sb.AppendLine($"[z] : {this.Z}");
-            sb.AppendLine($"[rcode] : {this.Rcode}");
-            sb.AppendLine($"[queryCount] : {this.QueryCount}");
-            sb.AppendLine($"[answerCount] : {this.AnswerCount}");
-            sb.AppendLine($"[authorityCount] : {this.AuthorityCount}");
-            sb.AppendLine($"[addtlCount] : {this.AddtlCount}");
-            return sb.ToString();
+            return this.jsonSerializer.PrettyPrint(this.ToJson());
         }
     }
 }

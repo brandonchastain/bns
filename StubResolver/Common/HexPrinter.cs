@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
 
-namespace Dns
+namespace Bns.StubResolver.Common
 {
     public static class HexPrinter
     {

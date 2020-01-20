@@ -1,21 +1,22 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Dns
+﻿using Bns.StubResolver.Dns.Serialization;
+using System;
+namespace Bns.StubResolver.Dns
 {
     public class Question
     {
         private const int MaxQnameSize = 255; // rfc 1035
 
         private static DnsQuestionSerializer serializer = new DnsQuestionSerializer();
+        private IJsonSerializer jsonSerializer;
 
         public String QName { get; set; }
         public RecordType QType { get; set; }
         public RecordClass QClass { get; set; }
 
-        public Question() { }
+        public Question()
+        {
+            jsonSerializer = new DnsJsonSerializer();
+        }
 
         public static Question FromBytes(byte[] buffer, out int bytesRead)
         {
@@ -24,18 +25,21 @@ namespace Dns
             return q;
         }
 
-        public override string ToString()
-        {
-            return "Question: \n" +
-                   $"[qname] : {this.QName} \n" +
-                   $"[qtype] : {this.QType} \n" +
-                   $"[qclass] : {this.QClass} \n";
-        }
-
         public byte[] ToByteArray()
         {
             var buffer = serializer.SerializeQuestion(this);
             return buffer;
         }
+
+        public string ToJson()
+        {
+            return this.jsonSerializer.ToJson(this);
+        }
+
+        public override string ToString()
+        {
+            return this.jsonSerializer.PrettyPrint(this.ToJson());
+        }
+
     }
 }

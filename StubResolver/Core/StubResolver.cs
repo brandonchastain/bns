@@ -1,7 +1,7 @@
 ﻿using Bns.StubResolver.Udp;
 using Bns.StubResolver.Udp.Contracts;
-using Dns;
-using Dns.ResourceRecords;
+using Bns.StubResolver.Dns;
+using Bns.StubResolver.Dns.ResourceRecords;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,9 +21,11 @@ namespace Bns.StubResolver.Core
         {
             var dnsMessage = DnsMessage.Parse(udpMessage.Buffer);
             
-            Console.WriteLine(dnsMessage);
+            Console.WriteLine("QUERY: \n" + dnsMessage);
 
             Resolve(dnsMessage);
+
+            Console.WriteLine("ANSWER: \n" + dnsMessage);
 
             return dnsMessage;
         }
@@ -50,7 +52,7 @@ namespace Bns.StubResolver.Core
         public async Task StartListener(CancellationToken cancellationToken)
         {
             Console.WriteLine("Listening for DNS queries...");
-            await this.listener.ListenAndProcessDatagrams(cancellationToken).ConfigureAwait(false);
+            await this.listener.Start(cancellationToken).ConfigureAwait(false);
         }
     }
 }
