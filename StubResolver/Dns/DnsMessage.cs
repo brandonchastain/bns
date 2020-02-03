@@ -6,16 +6,19 @@ namespace Bns.StubResolver.Dns
 {
     public class DnsMessage : IByteSerializable
     {
-        private Header Header { get; set; }
-        private Question Question { get; set; }
-        private List<ResourceRecord> Answers { get; set; }
-        private List<ResourceRecord> Authority { get; set; }
-        private List<ResourceRecord> Additional { get; set; }
 
-        private DnsMessage()
+        public DnsMessage()
         {
             this.Answers = new List<ResourceRecord>();
+            this.Authority = new List<ResourceRecord>();
+            this.Additional = new List<ResourceRecord>();
         }
+
+        public Header Header { get; set; }
+        public Question Question { get; set; }
+        public List<ResourceRecord> Answers { get; set; }
+        private List<ResourceRecord> Authority { get; set; }
+        private List<ResourceRecord> Additional { get; set; }
 
         public static DnsMessage Parse(byte[] buffer)
         {
@@ -36,22 +39,13 @@ namespace Bns.StubResolver.Dns
             return result;
         }
 
-        public void AddAnswer(ResourceRecord record)
+        public void AddAnswers(List<ResourceRecord> records)
         {
-            this.Answers.Add(record);
-            this.Header.AnswerCount++;
-        }
-
-        public void AddAuthority(ResourceRecord record)
-        {
-            this.Authority.Add(record);
-            this.Header.AuthorityCount++;
-        }
-
-        public void AddAdditional(ResourceRecord record)
-        {
-            this.Additional.Add(record);
-            this.Header.AddtlCount++;
+            foreach(var rec in records)
+            {
+                this.Answers.Add(rec);
+                this.Header.AnswerCount++;
+            }
         }
 
         public override string ToString()

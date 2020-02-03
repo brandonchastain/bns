@@ -10,12 +10,12 @@ namespace Bns.StubResolver.Udp
     public class UdpListener
     { 
         private readonly int listenPort;
-        private ProcessMessage processMessageCallback;
+        private ProcessMessageAsync processMessageCallback;
         private UdpClient listener;
 
-        public delegate IByteSerializable ProcessMessage(UdpMessage message);
+        public delegate Task<IByteSerializable> ProcessMessageAsync(UdpMessage message);
 
-        public UdpListener(ProcessMessage processMessage, ushort port)
+        public UdpListener(ProcessMessageAsync processMessage, ushort port)
         {
             this.processMessageCallback = processMessage ?? throw new ArgumentNullException(nameof(processMessage));
             this.listenPort = port;
@@ -46,7 +46,7 @@ namespace Bns.StubResolver.Udp
                     var bytes = udpMessage.Buffer;
                     var endpoint = udpMessage.RemoteEndPoint;
 
-                    var response = this.processMessageCallback(new UdpMessage(bytes, endpoint));
+                    var response = await this.processMessageCallback(new UdpMessage(bytes, endpoint));
                     if (response == null)
                     {
                         Console.WriteLine($"An error occurred while processing the UDP message.");

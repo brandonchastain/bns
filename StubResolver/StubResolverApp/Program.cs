@@ -11,7 +11,7 @@ namespace StubResolverApp
 
         public static async Task Main(string[] args)
         {
-            var rr = new StubResolver();
+            var rr = new Resolver();
             var cancellationToken = cts.Token;
 
             Console.CancelKeyPress += new ConsoleCancelEventHandler(sigintHandler);

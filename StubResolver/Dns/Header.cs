@@ -76,8 +76,11 @@ namespace Bns.StubResolver.Dns
             buffer[0] = (byte)(this.Id >> 8);
             buffer[1] = (byte)this.Id;
 
-            // Set is response flag to 1
-            buffer[2] |= 0x80;
+            if (this.IsResponse)
+            {
+                // Set is response flag to 1
+                buffer[2] |= 0x80;
+            }
 
             var opcodeNum = (ushort)this.Opcode;
             buffer[2] |= (byte)(opcodeNum << 3);
@@ -91,11 +94,14 @@ namespace Bns.StubResolver.Dns
             // set rd flag
             if (this.RecursionDesired)
             {
-                buffer[2] &= 0xfe;
+                buffer[2] |= 0x01;
             }
 
-            // set recursionAvailable flag to 1
-            buffer[3] |= 0x80;
+            if (this.RecursionAvailable)
+            {
+                // set recursionAvailable flag to 1
+                buffer[3] |= 0x80;
+            }
 
             // persist Z
             buffer[3] |= (byte)(this.Z << 4);

@@ -13,6 +13,8 @@ namespace Bns.StubResolver.Dns.ResourceRecords
         public override byte[] ToByteArray()
         {
             var bytes = new List<byte>(base.ToByteArray());
+            bytes.Add(0);
+            bytes.Add(4);
             bytes.AddRange(new List<byte>(this.Address));
             return bytes.ToArray();
         }
