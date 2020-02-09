@@ -6,7 +6,7 @@ namespace Bns.StubResolver.Dns
     {
         private const int MaxQnameSize = 255; // rfc 1035
 
-        private static DnsQuestionSerializer serializer = new DnsQuestionSerializer();
+        private static DnsQuestionBinarySerializer serializer = new DnsQuestionBinarySerializer();
         private IJsonSerializer jsonSerializer;
 
         public String QName { get; set; }

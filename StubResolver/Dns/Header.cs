@@ -12,6 +12,11 @@ namespace Bns.StubResolver.Dns
 
         private IJsonSerializer jsonSerializer;
 
+        public Header()
+        {
+            this.jsonSerializer = new DnsJsonSerializer();
+        }
+
         public ushort Id { get; set; }
         public bool IsResponse { get; set; }
         public HeaderOpCode Opcode { get; set; } // last 4 bits only
@@ -25,11 +30,6 @@ namespace Bns.StubResolver.Dns
         public ushort AnswerCount { get; set; }
         public ushort AuthorityCount { get; set; }
         public ushort AddtlCount { get; set; }
-
-        public Header()
-        {
-            this.jsonSerializer = new DnsJsonSerializer();
-        }
 
         public static Header Parse(byte[] buffer)
         {

@@ -1,22 +1,17 @@
-﻿using System;
+﻿using Bns.StubResolver.Dns.Serialization;
+using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 
 namespace Bns.StubResolver.Dns.ResourceRecords
 {
     public class ARecord : ResourceRecord
     {
-        public byte[] Address { get; set; }
+        public const int Length = 4;
+
+        public IPAddress Address { get; set; }
 
         public override RecordType GetRecordType() => RecordType.A;
-
-        public override byte[] ToByteArray()
-        {
-            var bytes = new List<byte>(base.ToByteArray());
-            bytes.Add(0);
-            bytes.Add(4);
-            bytes.AddRange(new List<byte>(this.Address));
-            return bytes.ToArray();
-        }
     }
 }

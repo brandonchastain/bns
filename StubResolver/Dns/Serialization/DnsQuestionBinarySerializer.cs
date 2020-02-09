@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Bns.StubResolver.Dns.Serialization
 {
-    public class DnsQuestionSerializer
+    public class DnsQuestionBinarySerializer
     {
         public List<byte> SerializeQName(string qname)
         {
@@ -56,17 +56,18 @@ namespace Bns.StubResolver.Dns.Serialization
             buffer = buffer ?? throw new ArgumentNullException(nameof(buffer));
 
             Question q = new Question();
-            q.QName = ParseQuestionName(buffer, out int qNameBytesRead);
+            q.QName = ParseQuestionName(buffer, 0, out int qNameBytesRead);
             q.QType = ParseQueryType(buffer, qNameBytesRead);
             q.QClass = ParseQueryClass(buffer, qNameBytesRead + 2);
             bytesRead = qNameBytesRead + 4;
             return q;
         }
 
-        public string ParseQuestionName(byte[] buffer, out int bytesRead)
+        public string ParseQuestionName(byte[] buffer, int start, out int bytesRead)
         {
+            // TODO: Improve out of bounds handling
             var sb = new StringBuilder();
-            int wordSizeIdx = 0;
+            int wordSizeIdx = start;
             int wordStart = wordSizeIdx + 1;
             var wordSize = (int)buffer[wordSizeIdx];
             bytesRead = 0;

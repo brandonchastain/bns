@@ -11,18 +11,18 @@ namespace StubResolverApp
 
         public static async Task Main(string[] args)
         {
-            var rr = new Resolver();
+            var resolver = new Resolver();
             var cancellationToken = cts.Token;
 
             Console.CancelKeyPress += new ConsoleCancelEventHandler(sigintHandler);
 
-            await rr.StartListener(cancellationToken).ConfigureAwait(false);
+            await resolver.StartListener(cancellationToken).ConfigureAwait(false);
         }
 
         private static void sigintHandler(object sender, ConsoleCancelEventArgs args)
         {
             cts.Cancel();
-            Console.WriteLine("Exiting.");
+            Console.WriteLine("Ctrl + C signal received. Exiting.");
             args.Cancel = true;
         }
     }

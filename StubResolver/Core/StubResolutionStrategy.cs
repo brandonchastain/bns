@@ -43,13 +43,7 @@ namespace Bns.StubResolver.Core
 
             // TODO: Parse the actual resource records.
 
-            var results = new List<ResourceRecord>();
-            results.Add(new ARecord()
-            {
-                Address = new byte[] { 0x00, 0x01, 0x02, 0x03 },
-                Name = "www.google1.com",
-                TimeToLive = 77
-            });
+            var results = responseDnsMessage.Answers;
             return results;
 
             //return responseDnsMessage.Answers;

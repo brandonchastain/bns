@@ -21,16 +21,23 @@ namespace Bns.StubResolver.Core
         private async Task<IByteSerializable> ProcessUdpMessage(UdpMessage udpMessage)
         {
             var dnsMessage = DnsMessage.Parse(udpMessage.Buffer);
+
             var answers = await this.resolutionStrategy.ResolveAsync(dnsMessage.Question);
             dnsMessage.AddAnswers(answers);
+
+            dnsMessage.Header.IsAuthoritativeAnswer = false;
+            dnsMessage.Header.Rcode = ResponseCode.NoError;
+            dnsMessage.Header.Opcode = HeaderOpCode.StandardQuery;
+            dnsMessage.Header.RecursionAvailable = false;
+
             return dnsMessage;
         }
 
         public async Task StartListener(CancellationToken cancellationToken)
         {
-            Console.WriteLine("Listening for DNS queries... (press CTRL-C to quit)");
+            Console.WriteLine("Listening for DNS queries... (press CTRL-C to quit)\n");
+
             await this.listener.Start(cancellationToken).ConfigureAwait(false);
-            Console.WriteLine("");
         }
     }
 }
