@@ -74,10 +74,13 @@ namespace Bns.StubResolver.Dns.Serialization
             var recordType = DeserializeRecordType(bytes, start + totalBytesRead);
             totalBytesRead += 2;
 
+            // count the record class bytes.
+            totalBytesRead += 2;
+
             var timeToLive = Read4BytesAsInt(bytes, start + totalBytesRead);
             totalBytesRead += 4;
 
-            var length = Read2BytesAsInt(bytes, start + totalBytesRead);
+            var length = DnsQuestionBinarySerializer.Read2BytesAsInt(bytes, start + totalBytesRead);
             totalBytesRead += 2;
 
             switch (recordType)
@@ -87,21 +90,21 @@ namespace Bns.StubResolver.Dns.Serialization
                     {
                         Name = name,
                         TimeToLive = timeToLive,
-                        Address = new System.Net.IPAddress(new ReadOnlySpan<byte>(bytes, bytesRead, 4)),
+                        Address = new System.Net.IPAddress(new ReadOnlySpan<byte>(bytes, start + totalBytesRead, 4)),
                     };
 
                     totalBytesRead += 4;
                     return a;
                 case RecordType.CNAME:
-                    var c = new CNameRecord()
-                    {
-                        Name = name,
-                        TimeToLive = timeToLive,
-                        CName = this.dnsSerializer.ParseQuestionName(bytes, bytesRead, out var cnameBytesRead),
-                    };
+                    //var c = new CNameRecord()
+                    //{
+                    //    Name = name,
+                    //    TimeToLive = timeToLive,
+                    //    CName = this.dnsSerializer.ParseQuestionName(bytes, start + totalBytesRead, out var cnameBytesRead),
+                    //};
 
-                    totalBytesRead += cnameBytesRead;
-                    return c;
+                    //totalBytesRead += cnameBytesRead;
+                    //return c;
                 default:
                     throw new NotImplementedException($"Deserialization of recordType {recordType} is not yet implemented.");
             }
@@ -109,7 +112,7 @@ namespace Bns.StubResolver.Dns.Serialization
 
         public static RecordType DeserializeRecordType(byte[] bytes, int start)
         {
-            int val = Read2BytesAsInt(bytes, start);
+            int val = DnsQuestionBinarySerializer.Read2BytesAsInt(bytes, start);
             val--;
             return (RecordType)val;
         }
@@ -136,19 +139,6 @@ namespace Bns.StubResolver.Dns.Serialization
             bytes.Add((byte)(val >> 16));
             bytes.Add((byte)(val >> 8));
             bytes.Add((byte)val);
-        }
-
-        private static int Read2BytesAsInt(byte[] bytes, int start)
-        {
-            if (start < 0 || bytes.Length < start + 2)
-            {
-                throw new ArgumentOutOfRangeException(nameof(start));
-            }
-
-            int val = bytes[start + 1];
-            val |= (bytes[start] << 8);
-
-            return val;
         }
 
         private static int Read4BytesAsInt(byte[] bytes, int start)

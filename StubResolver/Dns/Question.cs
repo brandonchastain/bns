@@ -18,9 +18,9 @@ namespace Bns.StubResolver.Dns
             jsonSerializer = new DnsJsonSerializer();
         }
 
-        public static Question FromBytes(byte[] buffer, out int bytesRead)
+        public static Question FromBytes(byte[] buffer, int start, out int bytesRead)
         {
-            var q = serializer.DeserializeBytes(buffer, out int questionBytesRead);
+            var q = serializer.DeserializeBytes(buffer, start, out int questionBytesRead);
             bytesRead = questionBytesRead;
             return q;
         }

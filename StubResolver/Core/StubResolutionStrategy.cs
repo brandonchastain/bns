@@ -22,7 +22,7 @@ namespace Bns.StubResolver.Core
                     Id = 3333,
                     QueryCount = 1,
                     RecursionDesired = true,
-                    Z = 2
+                    Z = 0
                 },
                 Question = question,
             };
@@ -31,7 +31,7 @@ namespace Bns.StubResolver.Core
             Console.WriteLine("Sending query:");
             Console.WriteLine(message);
 
-            var endpoint = new IPEndPoint(IPAddress.Parse("8.8.8.8"), 53);
+            var endpoint = new IPEndPoint(IPAddress.Parse("10.0.1.29"), 53);
             await udpClient.SendAsync(dgram, dgram.Length, endpoint);
             var response = await udpClient.ReceiveAsync();
 

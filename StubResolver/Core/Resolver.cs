@@ -9,11 +9,13 @@ namespace Bns.StubResolver.Core
 {
     public class Resolver
     {
+        private readonly ushort listenPort;
         private readonly UdpListener listener;
         private ResolutionStrategy resolutionStrategy;
 
-        public Resolver(ushort listenPort = 10053)
+        public Resolver(ushort listenPort)
         {
+            this.listenPort = listenPort;
             this.listener = new UdpListener(ProcessUdpMessage, listenPort);
             this.resolutionStrategy = new StubResolutionStrategy();
         }
@@ -23,19 +25,20 @@ namespace Bns.StubResolver.Core
             var dnsMessage = DnsMessage.Parse(udpMessage.Buffer);
 
             var answers = await this.resolutionStrategy.ResolveAsync(dnsMessage.Question);
-            dnsMessage.AddAnswers(answers);
+            dnsMessage.AddAnswersAndIncrementCount(answers);
 
+            dnsMessage.Header.IsResponse = true;
             dnsMessage.Header.IsAuthoritativeAnswer = false;
+            dnsMessage.Header.RecursionAvailable = true;
             dnsMessage.Header.Rcode = ResponseCode.NoError;
             dnsMessage.Header.Opcode = HeaderOpCode.StandardQuery;
-            dnsMessage.Header.RecursionAvailable = false;
 
             return dnsMessage;
         }
 
         public async Task StartListener(CancellationToken cancellationToken)
         {
-            Console.WriteLine("Listening for DNS queries... (press CTRL-C to quit)\n");
+            Console.WriteLine($"Listening for DNS queries on port {this.listenPort}... (press CTRL-C to quit)\n");
 
             await this.listener.Start(cancellationToken).ConfigureAwait(false);
         }

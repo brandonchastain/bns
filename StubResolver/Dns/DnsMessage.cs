@@ -29,21 +29,21 @@ namespace Bns.StubResolver.Dns
         {
             var result = new DnsMessage();
             result.Header = Header.Parse(buffer);
+            int start = 12;
 
-            var msgNoHeader = new List<byte>(); 
-            for (int i = 12; i < buffer.Length; i++)
-            {
-                msgNoHeader.Add(buffer[i]);
-            }
-
-            result.Question = Question.FromBytes(msgNoHeader.ToArray(), out var questionBytesRead);
+            result.Question = Question.FromBytes(buffer, start, out var questionBytesRead);
+            start += questionBytesRead;
 
             result.Answers = new List<ResourceRecord>();
+
+            var rrBytesRead = 0;
 
             for (int i = 0; i < result.Header.AnswerCount; i++)
             {
                 var rrSer = new ResourceRecordBinarySerializer(new DnsQuestionBinarySerializer());
-                var answerRecord = rrSer.FromBytes(msgNoHeader.ToArray(), questionBytesRead, out var rrBytesRead);
+                var answerRecord = rrSer.FromBytes(buffer, start + rrBytesRead, out var rrBytes);
+                rrBytesRead += rrBytes;
+
                 result.AddAnswer(answerRecord);
             }
 
@@ -59,14 +59,14 @@ namespace Bns.StubResolver.Dns
         public void AddAnswer(ResourceRecord rec)
         {
             this.Answers.Add(rec);
-            this.Header.AnswerCount++;
         }
 
-        public void AddAnswers(List<ResourceRecord> records)
+        public void AddAnswersAndIncrementCount(List<ResourceRecord> records)
         {
             foreach(var rec in records)
             {
                 this.AddAnswer(rec);
+                this.Header.AnswerCount++;
             }
         }
 

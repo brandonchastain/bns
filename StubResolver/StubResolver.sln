@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Udp", "UdpListener\Udp.cspr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Udp.Contracts", "Udp.Contracts\Udp.Contracts.csproj", "{B7C8CCAC-7999-41B0-AF90-89F881A9547F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{1776E3D1-A2F6-41C4-8BC7-9D15D4801860}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "Common\Common.csproj", "{1776E3D1-A2F6-41C4-8BC7-9D15D4801860}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

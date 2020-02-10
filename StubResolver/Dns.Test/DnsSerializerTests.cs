@@ -70,7 +70,7 @@ namespace Dns.Test
         public void TestDeserializeQuestion()
         {
             var b = new byte[] { 0x03, 0x77, 0x77, 0x77, 0x00, 0x00, 0x01, 0x00, 0x01 };
-            var q = new DnsQuestionBinarySerializer().DeserializeBytes(b, out var bytesRead);
+            var q = new DnsQuestionBinarySerializer().DeserializeBytes(b, 0, out var bytesRead);
 
             Assert.AreEqual(RecordClass.IN, q.QClass);
             Assert.AreEqual(RecordType.A, q.QType);
@@ -82,7 +82,7 @@ namespace Dns.Test
         public void TestDeserializeQuestionTwoParts()
         {
             var b = new byte[] { 0x03, 0x77, 0x77, 0x77, 0x09, 0x6d, 0x69, 0x63, 0x72, 0x6f, 0x73, 0x6f, 0x66, 0x74, 0x00, 0x00, 0x01, 0x00, 0x01 };
-            var q = new DnsQuestionBinarySerializer().DeserializeBytes(b, out var bytesRead);
+            var q = new DnsQuestionBinarySerializer().DeserializeBytes(b, 0, out var bytesRead);
 
             Assert.AreEqual(RecordClass.IN, q.QClass);
             Assert.AreEqual(RecordType.A, q.QType);

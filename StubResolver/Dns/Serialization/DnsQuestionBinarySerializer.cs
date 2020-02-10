@@ -51,15 +51,20 @@ namespace Bns.StubResolver.Dns.Serialization
             return wordBytes.ToArray();
         }
 
-        public Question DeserializeBytes(byte[] buffer, out int bytesRead)
+        public Question DeserializeBytes(byte[] buffer, int start, out int bytesRead)
         {
             buffer = buffer ?? throw new ArgumentNullException(nameof(buffer));
 
             Question q = new Question();
-            q.QName = ParseQuestionName(buffer, 0, out int qNameBytesRead);
-            q.QType = ParseQueryType(buffer, qNameBytesRead);
-            q.QClass = ParseQueryClass(buffer, qNameBytesRead + 2);
-            bytesRead = qNameBytesRead + 4;
+            q.QName = ParseQuestionName(buffer, start, out int qNameBytesRead);
+            bytesRead = qNameBytesRead;
+
+            q.QType = ParseQueryType(buffer, start + qNameBytesRead);
+            bytesRead += 2;
+
+            q.QClass = ParseQueryClass(buffer, start + qNameBytesRead + 2);
+            bytesRead += 2;
+
             return q;
         }
 
@@ -70,9 +75,10 @@ namespace Bns.StubResolver.Dns.Serialization
             int wordSizeIdx = start;
             int wordStart = wordSizeIdx + 1;
             var wordSize = (int)buffer[wordSizeIdx];
+            bool isPointer = (wordSize & 0xc0) != 0; // a pointer to another label will have the first two bits set.
             bytesRead = 0;
 
-            while (wordSize > 0)
+            while (wordSize > 0 && !isPointer)
             {
                 var wordBytes = new byte[wordSize];
                 Array.Copy(buffer, wordStart, wordBytes, 0, wordSize);
@@ -82,11 +88,40 @@ namespace Bns.StubResolver.Dns.Serialization
                 wordSizeIdx += (wordSize + 1);
                 wordSize = (int)buffer[wordSizeIdx];
                 wordStart = wordSizeIdx + 1;
+
+                isPointer = (wordSize & (0xc0 << 8)) != 0;
             }
 
-            bytesRead += 1;
+
+            if (isPointer)
+            {
+                var pointer = Read2BytesAsInt(buffer, wordSizeIdx);
+                pointer &= ~(0xc0 << 8);
+                sb.Append(this.ParseQuestionName(buffer, pointer, out _));
+
+                // count the 2 bytes
+                bytesRead += 2;
+            }
+            else
+            {
+                // count the final null byte as a byte that was read.
+                bytesRead += 1;
+            }
 
             return sb.ToString();
+        }
+
+        public static int Read2BytesAsInt(byte[] bytes, int start)
+        {
+            if (start < 0 || bytes.Length < start + 2)
+            {
+                throw new ArgumentOutOfRangeException(nameof(start));
+            }
+
+            int val = bytes[start + 1];
+            val |= (bytes[start] << 8);
+
+            return val;
         }
 
         private RecordType ParseQueryType(byte[] buffer, int index)

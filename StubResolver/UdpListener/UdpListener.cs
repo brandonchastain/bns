@@ -25,7 +25,7 @@ namespace Bns.StubResolver.Udp
         public async Task Start(CancellationToken cancellationToken)
         {
             await TaskUtil.RunAndWaitForCancel(
-                this.ListenAndProcessDatagrams(),
+                this.ListenAndProcessDatagrams(cancellationToken),
                 cancellationToken,
                 this.Stop);
         }
@@ -35,30 +35,41 @@ namespace Bns.StubResolver.Udp
             this.listener.Close();
         }
 
-        private async Task ListenAndProcessDatagrams()
+        private async Task ListenAndProcessDatagrams(CancellationToken cancellationToken)
         {
             try
             { 
-                while (true)
+                while (!cancellationToken.IsCancellationRequested)
                 {
                     var receiveTask = this.listener.ReceiveAsync();
                     var udpMessage = await receiveTask;
                     var bytes = udpMessage.Buffer;
                     var endpoint = udpMessage.RemoteEndPoint;
 
-                    var response = await this.processMessageCallback(new UdpMessage(bytes, endpoint));
-                    if (response == null)
+                    try
                     {
-                        Console.WriteLine($"An error occurred while processing the UDP message.");
-                    }
+                        var response = await this.processMessageCallback(new UdpMessage(bytes, endpoint));
+                        if (response == null)
+                        {
+                            Console.WriteLine($"An error occurred while processing the UDP message.");
+                        }
 
-                    var responseBytes = response.ToByteArray();
-                    await listener.SendAsync(responseBytes, responseBytes.Length, endpoint).ConfigureAwait(false);
+                        var responseBytes = response.ToByteArray();
+                        await listener.SendAsync(responseBytes, responseBytes.Length, endpoint).ConfigureAwait(false);
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        throw;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
                 }
             }
-            catch (SocketException se)
+            catch (ObjectDisposedException)
             {
-                Console.WriteLine(se);
+                // Task was cancelled.
             }
         }
     }
