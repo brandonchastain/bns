@@ -3,6 +3,7 @@ CFLAGS=-g -I.
 DEPS = types.h util.h common.h
 OBJ = bns.o util.o common.o
 CLIENTOBJ = bnsclient.o util.o common.o
+TESTOBJ = test.o util.o common.o
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
@@ -13,7 +14,7 @@ bns: $(OBJ)
 bnsclient: $(CLIENTOBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 
-test: test.o util.o
+test: $(TESTOBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 clean:

@@ -119,6 +119,8 @@ int getQNameFromLabel(char *qname, size_t qnameSize, BYTE* rawRequest) {
 
 // assume qname is null-terminated
 int getLabelFromQName(char *label, char* qname) {
+    size_t bytesWritten = 0;
+
     int i = 0;
     while (qname[i] != 0) {
         int j = 0;
@@ -132,11 +134,13 @@ int getLabelFromQName(char *label, char* qname) {
         subdomain[j] = '\0';
         label[i] = j;
         memcpy((label + i + 1), subdomain, j);
-        i += (j + 1);
+        i += (j + 1); // move to next subdomain
+        bytesWritten += (j + 1);
     }
     label[i] = 0;
+    bytesWritten += 1;
 
-    return i + 1;
+    return bytesWritten;
 }
 
 uint16_t parseQuestion(Question* q, uint16_t qcount, BYTE* rawRequest) {
@@ -171,6 +175,14 @@ uint16_t parseQuestion(Question* q, uint16_t qcount, BYTE* rawRequest) {
     }
 
     return bytesRead;
+}
+
+size_t serializeQuestion(BYTE* buffer, Question* q) {
+    int currentByte = getLabelFromQName(buffer, q->qname);
+    buffer[currentByte] = q->qtype;
+    currentByte += 2;
+    buffer[currentByte] = q->qclass;
+    currentByte += 2;
 }
 
 void printQuestion(Question* q) {

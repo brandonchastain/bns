@@ -12,8 +12,8 @@
 #define SET_BITFLAG(flags, mask) (flags |= mask)
 #define CLEAR_BITFLAG(flags, mask) (flags &= ~mask)
 #define GET_OPCODE(flags) ((flags & mask_opcode) >> 11)
-#define CLEAR_RCODE(flags) ((flags) &= ~(mask_rcode))
 #define SET_RCODE(flags, val) (flags |= (val & mask_rcode))
+#define CLEAR_RCODE(flags) ((flags) &= ~(mask_rcode))
 
 extern const uint16_t mask_qr;
 extern const uint16_t mask_opcode;
@@ -74,5 +74,11 @@ typedef struct _resourceRecord {
     BYTE rdata[MAX_BUFFER];
     size_t size;
 }  ResourceRecord;
+
+typedef struct _dnsRequest {
+    Header header;
+    Question question;
+    ResourceRecord resourceRecord;
+} DnsRequest;
 
 #endif

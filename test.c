@@ -1,7 +1,29 @@
 #include <string.h>
 #include "util.h"
 #include "types.h"
+#include "common.h"
 
+void testGetLabelFromQName() {
+    char label[MAX_BUFFER];
+    int len = getLabelFromQName(label, "www.microsoft.com");
+    
+    char expected[19] = { 3, 'w', 'w', 'w', 9, 'm', 'i', 'c', 'r', 'o', 's', 'o', 'f', 't', 3, 'c', 'o', 'm', 0 };
+
+    for (int i = 0; i < len; i++) {    
+        printf("%d\t", label[i]);
+        printf("expected: ");
+        if (i < 19) {
+            printf("%d", expected[i]);
+        }
+        printf("\n");
+    }
+
+    printf("\n");
+
+    printHexStr(label, len);
+
+    
+}
 
 void testLongDomain() {
     printf("%d\n", (int)strlen("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcde.abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk.com"));
@@ -38,12 +60,11 @@ void testByteOrder() {
 void testToNetworkOrder() {
     uint32_t n = 44436u;
     printHexStr((BYTE *)&n, sizeof(n));
-    toNetworkOrder((BYTE *)&n, sizeof(n));
+    // toNetworkOrder((BYTE *)&n, sizeof(n));
     printHexStr((BYTE *)&n, sizeof(n));
 }
 
 int main(void) {
-    testByteOrder();
-    testToNetworkOrder();
+    testGetLabelFromQName();
     return 0;
 }

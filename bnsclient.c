@@ -8,10 +8,31 @@
 #include <netinet/in.h> 
 #include <netdb.h> 
 
+#include "types.h"
 #include "common.h"
   
 #define PORT 50037
-#define MAX_BUFFER_SIZE 10
+
+void initServerAddr(struct sockaddr_in* serveraddr) {
+    memset(serveraddr, 0, sizeof(struct sockaddr_in));
+    serveraddr->sin_family = AF_INET;
+    serveraddr->sin_port = htons(PORT);
+    serveraddr->sin_addr.s_addr = htonl(0x7f000001);
+}
+
+void createRequest(DnsRequest* request) {
+    memset(&request, 0, sizeof(request));
+    
+    SET_BITFLAG(request->header.flags, mask_rd); // recursion desired
+    request->header.identifier = 0xffff;
+    request->header.questionCount = 1;
+
+    request->question.qclass = IN;
+    request->question.qtype = A;
+
+    char* qname = "www.microsoft.com";
+    strncpy(request->question.qname, qname, strlen(qname));
+}
 
 int main(void) {
     int sockfd;
@@ -22,30 +43,25 @@ int main(void) {
     }
 
     struct sockaddr_in serveraddr;
-    memset(&serveraddr, 0, sizeof(serveraddr));
-    serveraddr.sin_family = AF_INET;
-    serveraddr.sin_port = htons(PORT);
-    serveraddr.sin_addr.s_addr = htonl(0x7f000001);
+    initServerAddr(&serveraddr);
 
-    for (int i = 0; i < 4; i++) {
-        if (sendto(sockfd, "hello", 5, MSG_CONFIRM, (struct sockaddr *)&serveraddr, sizeof(serveraddr)) < 0) {
-            perror("sendto failed");
-            break;
-        }
-        
-        printf("message sent\n");
+    DnsRequest request;
+    createRequest(&request);
+    BYTE *serializedRequest = serializeRequest(&request);
 
-        BYTE buffer[MAX_BUFFER_SIZE];
-        memset(buffer, 0, sizeof(buffer));
-        int n, len;
-        n = recvfrom(sockfd, &buffer, sizeof(buffer), MSG_WAITALL, (struct sockaddr *)&serveraddr, &len);
-        if (n < 0) {
-            perror("recvfrom failed");
-            break;
-        }
-        
-        buffer[n] = '\0';
-        printf("Server: %s\n", buffer);
+
+    if (sendto(sockfd, "hello", 5, MSG_CONFIRM, (struct sockaddr *)&serveraddr, sizeof(serveraddr)) < 0) {
+        perror("sendto failed");
+    }
+    
+    printf("query sent\n");
+
+    BYTE buffer[MAX_BUFFER];
+    memset(buffer, 0, sizeof(buffer));
+    int n, len;
+    n = recvfrom(sockfd, &buffer, sizeof(buffer), MSG_WAITALL, (struct sockaddr *)&serveraddr, &len);
+    if (n < 0) {
+        perror("recvfrom failed");
     }
 
     close(sockfd);
