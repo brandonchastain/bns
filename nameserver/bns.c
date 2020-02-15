@@ -13,7 +13,7 @@
 #include "common.h"
 #include "util.h"
 
-#define PORT 50037 
+#define PORT 53
 #define MAX_BUFFER_SIZE 1024
 
 static volatile sig_atomic_t ctrlCReceived = 0;
@@ -36,13 +36,13 @@ void setUpCtrlCHandler() {
 }
 
 void initServerAddr(struct sockaddr_in* serverAddress) {
-    memset(serverAddress, 0, sizeof(serverAddress));
+    memset(serverAddress, 0, sizeof(struct sockaddr_in));
     serverAddress->sin_family = AF_INET;
     serverAddress->sin_addr.s_addr = htonl(INADDR_ANY);
     serverAddress->sin_port = htons(PORT);
 }
 
-int initSocket() {
+void initSocket() {
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
     if (sockfd < 0) {
@@ -96,7 +96,7 @@ void listenForUdpQueries() {
         memset(buffer, 0, MAX_BUFFER_SIZE);
 
         struct sockaddr_in clientAddr;
-        int clientAddrLength = sizeof(clientAddr);
+        socklen_t clientAddrLength = sizeof(clientAddr);
         memset(&clientAddr, 0, clientAddrLength);
 
         // wait for incoming udp message
@@ -129,8 +129,9 @@ void listenForUdpQueries() {
         SET_RCODE(h.flags, 3u); // nxdomain
 
         Question q;
-        int qBytesRead = parseQuestion(&q, 1, &buffer[hByteRead]);
-
+        // int qBytesRead = parseQuestion(&q, 1, &buffer[hByteRead]);
+        parseQuestion(&q, 1, &buffer[hByteRead]);
+        
         ResourceRecord rr;
         int responseCode = answerQuestion(&rr, &q);
 
@@ -179,7 +180,7 @@ void listenForUdpQueries() {
 
         // printf("Response (network order):\n");
         // printHexStr(response, sizeof(sh) + rawQSize);
-        int r = sendto(sockfd, response, responseOffset, MSG_CONFIRM, (const struct sockaddr *)&clientAddr, clientAddrLength);
+        int r = sendto(sockfd, (const void *)response, responseOffset, MSG_CONFIRM, (const struct sockaddr *)&clientAddr, clientAddrLength);
         if (r < 0) {
             perror("sendto failed");
             break;

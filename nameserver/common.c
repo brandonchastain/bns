@@ -64,7 +64,6 @@ void printHeader(Header *h) {
 
 void getRawQuestion(BYTE* rawQuestion, size_t* rawQuestionLen, BYTE* rawRequest) {
     uint16_t bytesRead = 0;
-    BYTE* curr = rawRequest; //current pointer
 
     while (rawRequest[bytesRead] != 0x0) {
         rawQuestion[bytesRead] = rawRequest[bytesRead];
@@ -93,7 +92,7 @@ int getQNameFromLabel(char *qname, size_t qnameSize, BYTE* rawRequest) {
 
     uint16_t bytesRead = 0;
     BYTE* currIn = rawRequest;
-    BYTE* currOut = qname;
+    BYTE* currOut = (BYTE *)qname;
 
     char dot = '.';
     while (*currIn != 0) {
@@ -153,7 +152,7 @@ uint16_t parseQuestion(Question* q, uint16_t qcount, BYTE* rawRequest) {
         int qnameBytes = getQNameFromLabel(qname, sizeof(qname), (rawRequest + bytesRead));
         if (qnameBytes <= 0) {
             printf("ERROR: Unable to parse qname.\n");
-            printBinStr(qname, sizeof(qname));
+            printBinStr((BYTE *)qname, sizeof(qname));
             return -1;
         }
 
@@ -228,10 +227,9 @@ size_t serializeResourceRecord(BYTE* bytes, ResourceRecord* rr) {
     return offset;
 }
 
-int printDnsRequest(BYTE* buffer, size_t bufferSize) {
+void printDnsRequest(BYTE* buffer, size_t bufferSize) {
     if (bufferSize > MAX_BUFFER) {
-        printf("error: dns request is larger than allowed max size of 512 bytes");
-        return -1;
+        perror("error: dns request is larger than allowed max size of 512 bytes");
     }
 
     Header h;
@@ -242,7 +240,8 @@ int printDnsRequest(BYTE* buffer, size_t bufferSize) {
     //assuming one question for now
     Question q[512 / sizeof(Question)];
     memset(&q, 0, sizeof(q));
-    uint16_t qBytesRead = parseQuestion(q, h.questionCount, &buffer[hBytesRead]); // start at next byte after the header
+    // uint16_t qBytesRead = parseQuestion(q, h.questionCount, &buffer[hBytesRead]); // start at next byte after the header
+    parseQuestion(q, h.questionCount, &buffer[hBytesRead]); // start at next byte after the header
     
     for (int i = 0; i < h.questionCount; i++) {
         printQuestion(&q[i]);

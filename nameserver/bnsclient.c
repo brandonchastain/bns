@@ -34,7 +34,8 @@ void createRequest(DnsRequest* request) {
     strncpy(request->question.qname, qname, strlen(qname));
 }
 
-int main(void) {
+int main(int argc, char **argv) {
+
     int sockfd;
 
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
