@@ -20,6 +20,13 @@ namespace Bns.StubResolver.Core
             this.resolutionStrategy = new StubResolutionStrategy();
         }
 
+        public async Task StartListener(CancellationToken cancellationToken)
+        {
+            Console.WriteLine($"Listening for DNS queries on port {this.listenPort}... (press CTRL-C to quit)\n");
+
+            await this.listener.Start(cancellationToken).ConfigureAwait(false);
+        }
+
         private async Task<IByteSerializable> ProcessUdpMessage(UdpMessage udpMessage)
         {
             var dnsMessage = DnsMessage.Parse(udpMessage.Buffer);
@@ -34,13 +41,6 @@ namespace Bns.StubResolver.Core
             dnsMessage.Header.Opcode = HeaderOpCode.StandardQuery;
 
             return dnsMessage;
-        }
-
-        public async Task StartListener(CancellationToken cancellationToken)
-        {
-            Console.WriteLine($"Listening for DNS queries on port {this.listenPort}... (press CTRL-C to quit)\n");
-
-            await this.listener.Start(cancellationToken).ConfigureAwait(false);
         }
     }
 }

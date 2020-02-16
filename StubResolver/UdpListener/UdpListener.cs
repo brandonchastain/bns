@@ -39,13 +39,13 @@ namespace Bns.StubResolver.Udp
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                var receiveTask = this.listener.ReceiveAsync();
-                var udpMessage = await receiveTask;
-                var bytes = udpMessage.Buffer;
-                var endpoint = udpMessage.RemoteEndPoint;
-
                 try
                 {
+                    var receiveTask = this.listener.ReceiveAsync();
+                    var udpMessage = await receiveTask;
+                    var bytes = udpMessage.Buffer;
+                    var endpoint = udpMessage.RemoteEndPoint;
+
                     var response = await this.processMessageCallback(new UdpMessage(bytes, endpoint));
                     if (response == null)
                     {
