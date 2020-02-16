@@ -11,7 +11,7 @@ namespace Bns.StubResolver.Core
     {
         private readonly ushort listenPort;
         private readonly UdpListener listener;
-        private ResolutionStrategy resolutionStrategy;
+        private IResolutionStrategy resolutionStrategy;
 
         public Resolver(ushort listenPort)
         {

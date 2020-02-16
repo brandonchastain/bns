@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace Bns.StubResolver.Core
 {
-    internal class StubResolutionStrategy : ResolutionStrategy
+    internal class StubResolutionStrategy : IResolutionStrategy
     {
         private UdpClient udpClient = new UdpClient();
 
-        public override async Task<List<ResourceRecord>> ResolveAsync(Question question)
+        public async Task<List<ResourceRecord>> ResolveAsync(Question question)
         {
             var message = new DnsMessage()
             {
@@ -41,12 +41,7 @@ namespace Bns.StubResolver.Core
             Console.WriteLine($"Response from {endpoint}: ");
             Console.WriteLine(responseDnsMessage);
 
-            // TODO: Parse the actual resource records.
-
-            var results = responseDnsMessage.Answers;
-            return results;
-
-            //return responseDnsMessage.Answers;
+            return responseDnsMessage.Answers;
         }
     }
 }

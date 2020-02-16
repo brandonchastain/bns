@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace Bns.StubResolver.Core
 {
-    internal abstract class ResolutionStrategy
+    internal interface IResolutionStrategy
     {
-        public abstract Task<List<ResourceRecord>> ResolveAsync(Question question);
+        Task<List<ResourceRecord>> ResolveAsync(Question question);
     }
 }

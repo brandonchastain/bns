@@ -17,4 +17,7 @@
     <ProjectReference Include="..\Dns\Dns.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="EmptyClass.cs" />
+  </ItemGroup>
 </Project>

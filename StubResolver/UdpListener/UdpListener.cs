@@ -37,39 +37,32 @@ namespace Bns.StubResolver.Udp
 
         private async Task ListenAndProcessDatagrams(CancellationToken cancellationToken)
         {
-            try
-            { 
-                while (!cancellationToken.IsCancellationRequested)
-                {
-                    var receiveTask = this.listener.ReceiveAsync();
-                    var udpMessage = await receiveTask;
-                    var bytes = udpMessage.Buffer;
-                    var endpoint = udpMessage.RemoteEndPoint;
-
-                    try
-                    {
-                        var response = await this.processMessageCallback(new UdpMessage(bytes, endpoint));
-                        if (response == null)
-                        {
-                            Console.WriteLine($"An error occurred while processing the UDP message.");
-                        }
-
-                        var responseBytes = response.ToByteArray();
-                        await listener.SendAsync(responseBytes, responseBytes.Length, endpoint).ConfigureAwait(false);
-                    }
-                    catch (ObjectDisposedException)
-                    {
-                        throw;
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex);
-                    }
-                }
-            }
-            catch (ObjectDisposedException)
+            while (!cancellationToken.IsCancellationRequested)
             {
-                // Task was cancelled.
+                var receiveTask = this.listener.ReceiveAsync();
+                var udpMessage = await receiveTask;
+                var bytes = udpMessage.Buffer;
+                var endpoint = udpMessage.RemoteEndPoint;
+
+                try
+                {
+                    var response = await this.processMessageCallback(new UdpMessage(bytes, endpoint));
+                    if (response == null)
+                    {
+                        Console.WriteLine($"An error occurred while processing the UDP message.");
+                    }
+
+                    var responseBytes = response.ToByteArray();
+                    await listener.SendAsync(responseBytes, responseBytes.Length, endpoint).ConfigureAwait(false);
+                }
+                catch (ObjectDisposedException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
             }
         }
     }

@@ -14,3 +14,6 @@ test
 .vscode
 .vs/*
 .vs
+
+# OS files
+.DS_Store

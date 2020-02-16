@@ -21,24 +21,26 @@ namespace Bns.StubResolver.Dns.Serialization
             bytes.AddRange(qNameBytes);
 
             int rrTypeNum = ((int)rr.GetRecordType()) + 1;
-            AppendIntAs2Bytes(rrTypeNum, bytes);
+            bytes.AppendIntAs2Bytes(rrTypeNum);
 
             var rrClassNum = ((int)rr.GetRecordClass()) + 1;
-            AppendIntAs2Bytes(rrClassNum, bytes);
+            bytes.AppendIntAs2Bytes(rrClassNum);
 
-            AppendIntAs4Bytes(rr.TimeToLive, bytes);
+            bytes.AppendIntAs4Bytes(rr.TimeToLive);
 
-            if (rr is ARecord a)
+            switch (rr)
             {
-                bytes.AddRange(this.ToByteArray(a));
-            }
-            else if (rr is CNameRecord c)
-            {
-                bytes.AddRange(this.ToByteArray(c));
-            }
-            else
-            {
-                throw new NotImplementedException($"Serialization for recordType {rr.GetRecordType()} is not yet implemented.");
+                case ARecord a:
+                    bytes.AddRange(this.ToByteArray(a));
+                    break;
+                case CNameRecord c:
+                    bytes.AddRange(this.ToByteArray(c));
+                    break;
+                case NSRecord ns:
+                    bytes.AddRange(this.ToByteArray(ns));
+                    break;
+                default:
+                    throw new NotImplementedException($"Serialization for recordType {rr.GetRecordType()} is not yet implemented.");
             }
 
             return bytes.ToArray();
@@ -49,7 +51,7 @@ namespace Bns.StubResolver.Dns.Serialization
             var addressBytes = a.Address.GetAddressBytes();
 
             var bytes = new List<byte>();
-            AppendIntAs2Bytes(ARecord.Length, bytes);
+            bytes.AppendIntAs2Bytes(ARecord.Length);
             bytes.AddRange(addressBytes);
             return bytes.ToArray();
         }
@@ -59,8 +61,18 @@ namespace Bns.StubResolver.Dns.Serialization
             var bytes = new List<byte>();
             var qBytes = new DnsQuestionBinarySerializer().SerializeQName(rr.CName);
 
-            bytes.Add((byte)(qBytes.Count >> 8));
-            bytes.Add((byte)qBytes.Count);
+            bytes.AppendIntAs2Bytes(qBytes.Count);
+            bytes.AddRange(qBytes);
+
+            return bytes.ToArray();
+        }
+
+        private byte[] ToByteArray(NSRecord rr)
+        {
+            var bytes = new List<byte>();
+            var qBytes = new DnsQuestionBinarySerializer().SerializeQName(rr.DName);
+
+            bytes.AppendIntAs2Bytes(qBytes.Count);
             bytes.AddRange(qBytes);
 
             return bytes.ToArray();
@@ -96,15 +108,24 @@ namespace Bns.StubResolver.Dns.Serialization
                     totalBytesRead += 4;
                     return a;
                 case RecordType.CNAME:
-                    //var c = new CNameRecord()
-                    //{
-                    //    Name = name,
-                    //    TimeToLive = timeToLive,
-                    //    CName = this.dnsSerializer.ParseQuestionName(bytes, start + totalBytesRead, out var cnameBytesRead),
-                    //};
+                    var c = new CNameRecord()
+                    {
+                        Name = name,
+                        TimeToLive = timeToLive,
+                        CName = this.dnsSerializer.ParseQuestionName(bytes, start + totalBytesRead, out var cnameBytesRead),
+                    };
 
-                    //totalBytesRead += cnameBytesRead;
-                    //return c;
+                    totalBytesRead += cnameBytesRead;
+                    return c;
+                case RecordType.NS:
+                    var ns = new NSRecord()
+                    {
+                        Name = name,
+                        TimeToLive = timeToLive,
+                        DName = this.dnsSerializer.ParseQuestionName(bytes, start + totalBytesRead, out var dnameBytesRead),
+                    };
+                    totalBytesRead += dnameBytesRead;
+                    return ns;
                 default:
                     throw new NotImplementedException($"Deserialization of recordType {recordType} is not yet implemented.");
             }
@@ -115,30 +136,6 @@ namespace Bns.StubResolver.Dns.Serialization
             int val = DnsQuestionBinarySerializer.Read2BytesAsInt(bytes, start);
             val--;
             return (RecordType)val;
-        }
-
-        private static void AppendIntAs2Bytes(int val, IList<byte> bytes)
-        {
-            if (bytes == null)
-            {
-                throw new ArgumentNullException(nameof(bytes));
-            }
-
-            bytes.Add((byte)(val >> 8));
-            bytes.Add((byte)val);
-        }
-
-        private static void AppendIntAs4Bytes(int val, IList<byte> bytes)
-        {
-            if (bytes == null)
-            {
-                throw new ArgumentNullException(nameof(bytes));
-            }
-
-            bytes.Add((byte)(val >> 24));
-            bytes.Add((byte)(val >> 16));
-            bytes.Add((byte)(val >> 8));
-            bytes.Add((byte)val);
         }
 
         private static int Read4BytesAsInt(byte[] bytes, int start)

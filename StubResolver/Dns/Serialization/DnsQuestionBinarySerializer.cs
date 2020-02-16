@@ -89,7 +89,7 @@ namespace Bns.StubResolver.Dns.Serialization
                 wordSize = (int)buffer[wordSizeIdx];
                 wordStart = wordSizeIdx + 1;
 
-                isPointer = (wordSize & (0xc0 << 8)) != 0;
+                isPointer = (wordSize & (0xc0)) != 0;
             }
 
 
