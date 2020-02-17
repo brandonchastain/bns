@@ -22,8 +22,8 @@ namespace Bns.StubResolver.Dns
         public Header Header { get; set; }
         public Question Question { get; set; }
         public List<ResourceRecord> Answers { get; set; }
-        private List<ResourceRecord> Authority { get; set; }
-        private List<ResourceRecord> Additional { get; set; }
+        public List<ResourceRecord> Authority { get; set; }
+        public List<ResourceRecord> Additional { get; set; }
 
         public static DnsMessage Parse(byte[] buffer)
         {
@@ -34,21 +34,47 @@ namespace Bns.StubResolver.Dns
             result.Question = Question.FromBytes(buffer, start, out var questionBytesRead);
             start += questionBytesRead;
 
-            result.Answers = new List<ResourceRecord>();
-
             var rrBytesRead = 0;
 
+            result.Answers = new List<ResourceRecord>();
             for (int i = 0; i < result.Header.AnswerCount; i++)
             {
                 var rrSer = new ResourceRecordBinarySerializer(new DnsQuestionBinarySerializer());
                 var answerRecord = rrSer.FromBytes(buffer, start + rrBytesRead, out var rrBytes);
                 rrBytesRead += rrBytes;
 
-                result.AddAnswer(answerRecord);
+                if (answerRecord != null)
+                {
+                    result.AddAnswer(answerRecord);
+                }
             }
 
+            result.Authority = new List<ResourceRecord>();
+            for (int i = 0; i < result.Header.AuthorityCount; i++)
+            {
+                var rrSer = new ResourceRecordBinarySerializer(new DnsQuestionBinarySerializer());
+                var authRec = rrSer.FromBytes(buffer, start + rrBytesRead, out var rrBytes);
+                rrBytesRead += rrBytes;
 
-            // TODO: read the rest of the answers.
+                if (authRec != null)
+                {
+                    result.AddAuthority(authRec);
+                }
+            }
+
+            result.Additional = new List<ResourceRecord>();
+            for (int i = 0; i < result.Header.AddtlCount; i++)
+            {
+                var rrSer = new ResourceRecordBinarySerializer(new DnsQuestionBinarySerializer());
+                var addtlRec = rrSer.FromBytes(buffer, start + rrBytesRead, out var rrBytes);
+                rrBytesRead += rrBytes;
+
+                if (addtlRec != null)
+                {
+                    result.AddAuthority(addtlRec);
+                }
+            }
+
 
             // var b = new DnsQuestionSerializer().SerializeQuestion(result.Question);
             // HexPrinter.PrintBufferHex(b, b.Length);
@@ -61,12 +87,40 @@ namespace Bns.StubResolver.Dns
             this.Answers.Add(rec);
         }
 
+        public void AddAuthority(ResourceRecord rec)
+        {
+            this.Authority.Add(rec);
+        }
+
+        public void AddAddtl(ResourceRecord rec)
+        {
+            this.Additional.Add(rec);
+        }
+
         public void AddAnswersAndIncrementCount(List<ResourceRecord> records)
         {
             foreach(var rec in records)
             {
                 this.AddAnswer(rec);
                 this.Header.AnswerCount++;
+            }
+        }
+
+        public void AddAuthorityAndIncrementCount(List<ResourceRecord> records)
+        {
+            foreach (var rec in records)
+            {
+                this.AddAuthority(rec);
+                this.Header.AuthorityCount++;
+            }
+        }
+
+        public void AddAdditionalAndIncrementCount(List<ResourceRecord> records)
+        {
+            foreach (var rec in records)
+            {
+                this.AddAddtl(rec);
+                this.Header.AddtlCount++;
             }
         }
 
@@ -85,6 +139,16 @@ namespace Bns.StubResolver.Dns
             foreach (var ans in this.Answers)
             {
                 all.AddRange(this.rrSerializer.ToByteArray(ans));
+            }
+
+            foreach (var auth in this.Authority)
+            {
+                all.AddRange(this.rrSerializer.ToByteArray(auth));
+            }
+
+            foreach (var addtl in this.Additional)
+            {
+                all.AddRange(this.rrSerializer.ToByteArray(addtl));
             }
 
             return all.ToArray();

@@ -31,8 +31,10 @@ namespace Bns.StubResolver.Core
         {
             var dnsMessage = DnsMessage.Parse(udpMessage.Buffer);
 
-            var answers = await this.resolutionStrategy.ResolveAsync(dnsMessage.Question);
-            dnsMessage.AddAnswersAndIncrementCount(answers);
+            var response = await this.resolutionStrategy.ResolveAsync(dnsMessage.Question);
+            dnsMessage.AddAnswersAndIncrementCount(response.Answers);
+            dnsMessage.AddAuthorityAndIncrementCount(response.Authority);
+            dnsMessage.AddAdditionalAndIncrementCount(response.Additional);
 
             dnsMessage.Header.IsResponse = true;
             dnsMessage.Header.IsAuthoritativeAnswer = false;

@@ -9,6 +9,6 @@ namespace Bns.StubResolver.Core
 {
     internal interface IResolutionStrategy
     {
-        Task<List<ResourceRecord>> ResolveAsync(Question question);
+        Task<DnsMessage> ResolveAsync(Question question);
     }
 }

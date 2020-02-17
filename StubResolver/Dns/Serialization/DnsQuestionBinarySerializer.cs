@@ -40,13 +40,9 @@ namespace Bns.StubResolver.Dns.Serialization
             }
 
             var wordBytes = SerializeQName(q.QName);
-            var qTypeToWrite = (int)(q.QType + 1);
-            wordBytes.Add((byte)(qTypeToWrite >> 8));
-            wordBytes.Add((byte)qTypeToWrite);
 
-            var qClassToWrite = (int)(q.QClass + 1);
-            wordBytes.Add((byte)(qClassToWrite >> 8));
-            wordBytes.Add((byte)qClassToWrite);
+            wordBytes.AppendIntAs2Bytes((int)q.QType + 1);
+            wordBytes.AppendIntAs2Bytes((int)q.QClass + 1);
 
             return wordBytes.ToArray();
         }

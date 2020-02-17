@@ -55,12 +55,23 @@ namespace Dns.Test
         [Test]
         public void SerializeNSRecord()
         {
+            var serializer = GetRrSerializer();
             var ns = new NSRecord()
             {
                 Name = "www.",
                 TimeToLive = 343,
-                DName = "cooldns.org."
+                DName = "aaa."
             };
+
+            byte[] expected = { 0x03, 0x77, 0x77, 0x77, 0x00,
+                                0x00, 0x02,
+                                0x00, 0x01,
+                                0x00, 0x00, 0x01, 0x57,
+                                0x00, 0x05,
+                                0x03, 0x61, 0x61, 0x61, 0x00};
+
+            var serialized = serializer.ToByteArray(ns);
+            Assert.AreEqual(expected, serialized);
         }
 
         private static ResourceRecordBinarySerializer GetRrSerializer()

@@ -13,7 +13,7 @@ namespace Bns.StubResolver.Core
     {
         private UdpClient udpClient = new UdpClient();
 
-        public async Task<List<ResourceRecord>> ResolveAsync(Question question)
+        public async Task<DnsMessage> ResolveAsync(Question question)
         {
             var message = new DnsMessage()
             {
@@ -28,8 +28,8 @@ namespace Bns.StubResolver.Core
             };
 
             var dgram = message.ToByteArray();
-            Console.WriteLine("Sending query:");
-            Console.WriteLine(message);
+            //Console.WriteLine("Sending query:");
+            //Console.WriteLine(message);
 
             var endpoint = new IPEndPoint(IPAddress.Parse("10.0.1.29"), 53);
             await udpClient.SendAsync(dgram, dgram.Length, endpoint);
@@ -38,10 +38,10 @@ namespace Bns.StubResolver.Core
             // TODO: validate the response before parsing
 
             var responseDnsMessage = DnsMessage.Parse(response.Buffer);
-            Console.WriteLine($"Response from {endpoint}: ");
-            Console.WriteLine(responseDnsMessage);
+            //Console.WriteLine($"Response from {endpoint}: ");
+            //Console.WriteLine(responseDnsMessage);
 
-            return responseDnsMessage.Answers;
+            return responseDnsMessage;
         }
     }
 }
