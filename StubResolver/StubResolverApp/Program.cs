@@ -13,16 +13,8 @@ namespace StubResolverApp
 
         public static async Task Main(string[] args)
         {
-            ushort port = 0;
-
-            if (args.Length > 0)
-            {
-                if (!ushort.TryParse(args[0], out port))
-                {
-                    port = DefaultUdpPort;
-                }
-            }
-            else
+            ushort port;
+            if (args.Length == 0 || !ushort.TryParse(args[0], out port))
             {
                 port = DefaultUdpPort;
             }
