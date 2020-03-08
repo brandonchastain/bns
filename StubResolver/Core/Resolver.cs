@@ -17,7 +17,7 @@ namespace Bns.StubResolver.Core
         {
             this.listenPort = listenPort;
             this.listener = new UdpListener(ProcessUdpMessage, listenPort);
-            this.resolutionStrategy = new StubResolutionStrategy();
+            this.resolutionStrategy = new EmptyResolutionStrategy();
         }
 
         public async Task StartListener(CancellationToken cancellationToken)
@@ -27,7 +27,7 @@ namespace Bns.StubResolver.Core
             await this.listener.Start(cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task<IByteSerializable> ProcessUdpMessage(UdpMessage udpMessage)
+        private async Task<byte[]> ProcessUdpMessage(UdpMessage udpMessage)
         {
             var dnsMessage = DnsMessage.Parse(udpMessage.Buffer);
 
@@ -38,11 +38,11 @@ namespace Bns.StubResolver.Core
 
             dnsMessage.Header.IsResponse = true;
             dnsMessage.Header.IsAuthoritativeAnswer = false;
-            dnsMessage.Header.RecursionAvailable = true;
-            dnsMessage.Header.Rcode = ResponseCode.NoError;
+            dnsMessage.Header.RecursionAvailable = response.Header.RecursionAvailable;
+            dnsMessage.Header.Rcode = response.Header.Rcode;
             dnsMessage.Header.Opcode = HeaderOpCode.StandardQuery;
 
-            return dnsMessage;
+            return dnsMessage.ToByteArray();
         }
     }
 }

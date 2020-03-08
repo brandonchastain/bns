@@ -74,9 +74,27 @@ namespace Dns.Test
             Assert.AreEqual(expected, serialized);
         }
 
+        //[Test]
+        //public void TestRead4BytesAsInt()
+        //{
+        //    var serializer = GetRrSerializer();
+        //    var ns = new NSRecord()
+        //    {
+        //        Name = "www.",
+        //        TimeToLive = 343,
+        //        DName = "aaa."
+        //    };
+
+        //    byte[] expected = { 0x02 };
+
+        //    var serialized = serializer.Read4BytesAsInt(ns);
+        //    Assert.AreEqual(expected, serialized);
+        //}
+
         private static ResourceRecordBinarySerializer GetRrSerializer()
         {
             var dnsQSerializer = new DnsQuestionBinarySerializer();
+            //var serializer = new ResourceRecordBinarySerializerTestAdapter(dnsQSerializer);
             var serializer = new ResourceRecordBinarySerializer(dnsQSerializer);
 
             return serializer;

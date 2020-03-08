@@ -13,7 +13,7 @@ namespace Bns.StubResolver.Udp
         private ProcessMessageAsync processMessageCallback;
         private UdpClient listener;
 
-        public delegate Task<IByteSerializable> ProcessMessageAsync(UdpMessage message);
+        public delegate Task<byte[]> ProcessMessageAsync(UdpMessage message);
 
         public UdpListener(ProcessMessageAsync processMessage, ushort port)
         {
@@ -46,13 +46,13 @@ namespace Bns.StubResolver.Udp
                     var bytes = udpMessage.Buffer;
                     var endpoint = udpMessage.RemoteEndPoint;
 
-                    var response = await this.processMessageCallback(new UdpMessage(bytes, endpoint));
+                    byte[] response = await this.processMessageCallback(new UdpMessage(bytes, endpoint));
                     if (response == null)
                     {
                         Console.WriteLine($"An error occurred while processing the UDP message.");
                     }
 
-                    var responseBytes = response.ToByteArray();
+                    var responseBytes = response;
                     await listener.SendAsync(responseBytes, responseBytes.Length, endpoint).ConfigureAwait(false);
                 }
                 catch (ObjectDisposedException)

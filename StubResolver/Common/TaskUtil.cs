@@ -27,7 +27,7 @@ namespace Bns.StubResolver.Common
                 }
                 finally
                 {
-                    cleanup();
+                    cleanup?.Invoke();
                 }
             }
         }
