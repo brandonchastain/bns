@@ -4,6 +4,7 @@ using Bns.StubResolver.Dns;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Bns.StubResolver.Dns.Serialization;
 
 namespace Bns.StubResolver.Core
 {
@@ -35,7 +36,8 @@ namespace Bns.StubResolver.Core
 
             if (response.Answers.Count == 0)
             {
-                Console.WriteLine($"No answer found for query from endpoint={udpMessage.Source}");
+                Console.WriteLine($"No answer found for question from endpoint={udpMessage.Source}:");
+                Console.WriteLine($"{new DnsJsonSerializer().ToJson(dnsMessage.Question)}");
             }
 
             dnsMessage.AddAnswersAndIncrementCount(response.Answers);

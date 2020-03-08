@@ -48,11 +48,6 @@ namespace Bns.StubResolver.Dns
                 {
                     result.AddAnswer(answerRecord);
                 }
-                else
-                {
-                    Console.WriteLine("No answer found for question: ");
-                    Console.WriteLine($"{new DnsJsonSerializer().ToJson(result.Question)}");
-                }
             }
 
             result.Authority = new List<ResourceRecord>();
