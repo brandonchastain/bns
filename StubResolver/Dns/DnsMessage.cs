@@ -2,6 +2,7 @@
 using Bns.StubResolver.Dns.ResourceRecords;
 using System.Collections.Generic;
 using Bns.StubResolver.Dns.Serialization;
+using System;
 
 namespace Bns.StubResolver.Dns
 {
@@ -46,6 +47,11 @@ namespace Bns.StubResolver.Dns
                 if (answerRecord != null)
                 {
                     result.AddAnswer(answerRecord);
+                }
+                else
+                {
+                    Console.WriteLine("No answer found for question: ");
+                    Console.WriteLine($"{new DnsJsonSerializer().ToJson(result.Question)}");
                 }
             }
 

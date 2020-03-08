@@ -32,6 +32,12 @@ namespace Bns.StubResolver.Core
             var dnsMessage = DnsMessage.Parse(udpMessage.Buffer);
 
             var response = await this.resolutionStrategy.ResolveAsync(dnsMessage.Question);
+
+            if (response.Answers.Count == 0)
+            {
+                Console.WriteLine($"No answer found for query from endpoint={udpMessage.Source}");
+            }
+
             dnsMessage.AddAnswersAndIncrementCount(response.Answers);
             dnsMessage.AddAuthorityAndIncrementCount(response.Authority);
             dnsMessage.AddAdditionalAndIncrementCount(response.Additional);
