@@ -108,7 +108,7 @@ namespace Bns.StubResolver.Client
         // TODO: Send a sliding window of 10 requests in parallel.
         private async Task SendDnsQueryAsync(UdpClient udpClient)
         {
-            var ipAddress = IPAddress.Parse("127.0.0.1");
+            var ipAddress = IPAddress.Parse("10.0.1.29");
             var port = 53;
             var endpoint = new IPEndPoint(ipAddress, port);
             var dnsMessage = new DnsMessage();

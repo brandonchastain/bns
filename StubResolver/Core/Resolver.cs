@@ -17,7 +17,7 @@ namespace Bns.StubResolver.Core
         {
             this.listenPort = listenPort;
             this.listener = new UdpListener(ProcessUdpMessage, listenPort);
-            this.resolutionStrategy = new EmptyResolutionStrategy();
+            this.resolutionStrategy = new StubResolutionStrategy();
         }
 
         public async Task StartListener(CancellationToken cancellationToken)
