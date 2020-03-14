@@ -1,7 +1,8 @@
 {
   "profiles": {
     "App": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "--Port 53"
     }
   }
 }

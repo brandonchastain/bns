@@ -1,7 +1,6 @@
-﻿using Bns.StubResolver.Dns;
-using Bns.StubResolver.Dns.ResourceRecords;
+﻿using Bns.Dns;
+using Bns.Dns.Serialization;
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -9,9 +8,15 @@ using System.Threading.Tasks;
 
 namespace Bns.StubResolver.Core
 {
-    internal class StubResolutionStrategy : IResolutionStrategy
+    public class StubResolutionStrategy : IResolutionStrategy
     {
+        private readonly IDnsMsgBinSerializer dnsSerializer;
         private UdpClient udpClient = new UdpClient();
+
+        public StubResolutionStrategy(IDnsMsgBinSerializer dnsSerializer)
+        {
+            this.dnsSerializer = dnsSerializer ?? throw new ArgumentNullException(nameof(dnsSerializer));
+        }
 
         public async Task<DnsMessage> ResolveAsync(Question question)
         {
@@ -27,7 +32,7 @@ namespace Bns.StubResolver.Core
                 Question = question,
             };
 
-            var dgram = message.ToByteArray();
+            var dgram = this.dnsSerializer.Serialize(message);
             //Console.WriteLine("Sending query:");
             //Console.WriteLine(message);
 
@@ -62,7 +67,7 @@ namespace Bns.StubResolver.Core
 
             // TODO: validate the response before parsing
 
-            var responseDnsMessage = DnsMessage.Parse(udpResponse.Buffer);
+            var responseDnsMessage = this.dnsSerializer.Deserialize(udpResponse.Buffer);
             //Console.WriteLine($"Response from {endpoint}: ");
             //Console.WriteLine(responseDnsMessage);
 

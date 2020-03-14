@@ -3,4 +3,4 @@
 // Project-level suppressions either have no target or are given
 // a specific target and scoped to a namespace, type, member, etc.
 
-[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>", Scope = "member", Target = "~M:Bns.StubResolver.Dns.Serialization.ResourceRecordBinarySerializer.ToByteArray(Bns.StubResolver.Dns.ResourceRecords.TXTRecord)~System.Byte[]")]
+[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>", Scope = "member", Target = "~M:Bns.Dns.Serialization.ResourceRecordBinarySerializer.ToByteArray(Bns.Dns.ResourceRecords.TXTRecord)~System.Byte[]")]

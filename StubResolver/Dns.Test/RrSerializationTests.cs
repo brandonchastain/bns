@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
-using Bns.StubResolver.Dns.ResourceRecords;
-using Bns.StubResolver.Dns.Serialization;
+using Bns.Dns.ResourceRecords;
+using Bns.Dns.Serialization;
 using NUnit.Framework;
 
 namespace Dns.Test

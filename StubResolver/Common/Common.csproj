@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>Bns.StubResolver.Common</RootNamespace>
+    <RootNamespace>Bns.Common</RootNamespace>
   </PropertyGroup>
 
 </Project>

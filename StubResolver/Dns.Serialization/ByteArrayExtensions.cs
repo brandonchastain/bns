@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Bns.StubResolver.Dns.Serialization
+namespace Bns.Dns.Serialization
 {
-    public static class ByteArrayExtensions
+    internal static class ByteArrayExtensions
     {
         public static void AppendIntAs2Bytes(this IList<byte> bytes, int val)
         {

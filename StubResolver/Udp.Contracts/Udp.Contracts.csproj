@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RootNamespace>Bns.StubResolver.Udp.Contracts</RootNamespace>
+    <RootNamespace>Bns.Udp.Contracts</RootNamespace>
   </PropertyGroup>
 
 </Project>

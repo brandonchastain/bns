@@ -1,5 +1,4 @@
-﻿using Bns.StubResolver.Dns;
-using Bns.StubResolver.Dns.ResourceRecords;
+﻿using Bns.Dns;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Bns.StubResolver.Core
 {
-    internal interface IResolutionStrategy
+    public interface IResolutionStrategy
     {
         Task<DnsMessage> ResolveAsync(Question question);
     }

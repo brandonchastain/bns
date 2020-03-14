@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Bns.StubResolver.Dns.Serialization
+namespace Bns.Dns.Serialization
 {
     public interface IJsonSerializer
     {

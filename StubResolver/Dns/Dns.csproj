@@ -5,7 +5,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <ApplicationIcon />
     <StartupObject />
-    <RootNamespace>Bns.StubResolver.Dns</RootNamespace>
+    <RootNamespace>Bns.Dns</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Dns.Serialization.Json\Dns.Serialization.Json.csproj" />
     <ProjectReference Include="..\UdpListener\Udp.csproj" />
   </ItemGroup>
 

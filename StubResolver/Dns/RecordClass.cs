@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Bns.StubResolver.Dns
+namespace Bns.Dns
 {
     public enum RecordClass
     {

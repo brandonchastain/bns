@@ -1,11 +1,8 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Bns.StubResolver.Dns.Serialization
+namespace Bns.Dns.Serialization
 {
     public class DnsJsonSerializer : IJsonSerializer
     {

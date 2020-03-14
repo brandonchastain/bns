@@ -5,7 +5,7 @@
     <OutputType>Library</OutputType>
     <ApplicationIcon />
     <StartupObject />
-    <RootNamespace>Bns.StubResolver.Udp</RootNamespace>
+    <RootNamespace>Bns.Udp.Contracts</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

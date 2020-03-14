@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Bns.StubResolver.Dns.ResourceRecords
+namespace Bns.Dns.ResourceRecords
 {
     public class TXTRecord : ResourceRecord
     {

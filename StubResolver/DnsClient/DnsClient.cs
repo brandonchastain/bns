@@ -1,5 +1,7 @@
-﻿using Bns.StubResolver.Common;
-using Bns.StubResolver.Dns;
+﻿using Bns.Dns;
+using Bns.Dns.Serialization;
+using Bns.StubResolver.Common;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -14,13 +16,21 @@ namespace Bns.StubResolver.Client
 {
     public class DnsClient : IDisposable
     {
+        private readonly IDnsMsgBinSerializer dnsSerializer;
+
         private SemaphoreSlim statLock = new SemaphoreSlim(1, 1);
         private long latencySum = 0;
         private int queryCount = 0;
 
+        public DnsClient(IDnsMsgBinSerializer dnsSerializer)
+        {
+            this.dnsSerializer = dnsSerializer ?? throw new ArgumentNullException(nameof(dnsSerializer));
+        }
+
         public static async Task Main(string[] args)
         {
-            using (var client = new DnsClient())
+            var services = ConfigureServices();
+            using (var client = services.GetRequiredService<DnsClient>())
             {
                 Console.WriteLine($"Sending DNS queries... (press CTRL-C to quit)\n");
 
@@ -57,6 +67,17 @@ namespace Bns.StubResolver.Client
             {
                 statLock.Dispose();
             }
+        }
+
+        private static IServiceProvider ConfigureServices()
+        {
+            var services = new ServiceCollection();
+            services.AddTransient<DnsQuestionBinarySerializer>();
+            services.AddTransient<ResourceRecordBinarySerializer>();
+            services.AddTransient<IDnsMsgBinSerializer, DnsMessageBinarySerializer>();
+            services.AddTransient<DnsClient>();
+
+            return services.BuildServiceProvider();
         }
 
         private async Task ReportLatencyAsync()
@@ -129,7 +150,7 @@ namespace Bns.StubResolver.Client
                 QName = "mobile.pipe.aria.microsoft.com",
             };
 
-            var bytes = dnsMessage.ToByteArray();
+            var bytes = this.dnsSerializer.Serialize(dnsMessage);
             var bytesSentTask = udpClient.SendAsync(bytes, bytes.Length, endpoint).ConfigureAwait(false);
             var stopwatch = Stopwatch.StartNew();
 
@@ -150,7 +171,7 @@ namespace Bns.StubResolver.Client
             var result = await udpTask.ConfigureAwait(false);
             var ms = stopwatch.ElapsedMilliseconds;
 
-            var dnsResponseMessage = DnsMessage.Parse(result.Buffer);
+            var dnsResponseMessage = this.dnsSerializer.Deserialize(result.Buffer);
 
             await statLock.WaitAsync().ConfigureAwait(false);
             latencySum += ms;

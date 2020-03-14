@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Bns.StubResolver.Dns.ResourceRecords
+namespace Bns.Dns.ResourceRecords
 {
     public class MXRecord : ResourceRecord
     {

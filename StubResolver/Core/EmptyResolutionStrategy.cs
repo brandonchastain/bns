@@ -1,5 +1,4 @@
-﻿using Bns.StubResolver.Dns;
-using Bns.StubResolver.Dns.ResourceRecords;
+﻿using Bns.Dns;
 using System;
 using System.Collections.Generic;
 using System.Net;

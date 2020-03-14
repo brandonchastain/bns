@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Bns.Dns.ResourceRecords;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Bns.StubResolver.Dns.Serialization
+namespace Bns.Dns.Serialization
 {
     public class DnsQuestionBinarySerializer
     {
