@@ -14,14 +14,13 @@ using System.Threading.Tasks;
 
 namespace Bns.DnsClient.App
 {
-    public class DnsClient : IDisposable
+    public class DnsClient
     {
         private static IConfiguration Configuration { get; set; }
 
         private readonly IDnsMsgBinSerializer dnsSerializer;
         private readonly IOptionsMonitor<DnsClientOptions> options;
 
-        private SemaphoreSlim statLock = new SemaphoreSlim(1, 1);
         private long latencySum = 0;
         private int queryCount = 0;
 
@@ -36,43 +35,25 @@ namespace Bns.DnsClient.App
             Configuration = new ConfigurationBuilder().AddCommandLine(args).Build();
 
             var services = ConfigureServices(Configuration);
-            using (var client = services.GetRequiredService<DnsClient>())
+            var client = services.GetRequiredService<DnsClient>();
+            Console.WriteLine($"Sending DNS queries to {client.options.CurrentValue.NsIpAddress}... (press CTRL-C to quit)\n");
+
+            var sendTasks = new List<Task>();
+
+            for (int i = 0; i < 100; i++)
             {
-                Console.WriteLine($"Sending DNS queries to {client.options.CurrentValue.NsIpAddress}... (press CTRL-C to quit)\n");
-
-                var sendTasks = new List<Task>();
-
-                for (int i = 0; i < 1; i++)
-                {
-                    sendTasks.Add(TaskUtil.RunAndWaitForCancel(
-                                client.SendQueriesAsync(),
-                                CancellationToken.None,
-                                cleanup: null));
-                }
-
-                var reportTask = TaskUtil.RunAndWaitForCancel(
-                    client.ReportLatencyAsync(),
-                    CancellationToken.None,
-                    cleanup: null);
-
-                await Task.WhenAny(Task.WhenAny(sendTasks), reportTask).ConfigureAwait(false);
+                sendTasks.Add(Task.Run(() => TaskUtil.RunAndWaitForCancel(
+                            client.SendQueriesAsync(),
+                            CancellationToken.None,
+                            cleanup: null)));
             }
-        }
 
-        public void Dispose()
-        {
-            // Dispose of unmanaged resources.
-            Dispose(true);
-            // Suppress finalization.
-            GC.SuppressFinalize(this);
-        }
+            var reportTask = TaskUtil.RunAndWaitForCancel(
+                client.ReportLatencyAsync(),
+                CancellationToken.None,
+                cleanup: null);
 
-        protected virtual void Dispose(bool isDisposing)
-        {
-            if (isDisposing)
-            {
-                statLock.Dispose();
-            }
+            await Task.WhenAny(Task.WhenAny(sendTasks), reportTask).ConfigureAwait(false);
         }
 
         private static IServiceProvider ConfigureServices(IConfiguration config)
@@ -94,7 +75,6 @@ namespace Bns.DnsClient.App
             while(true)
             {
                 await Task.Delay(2000).ConfigureAwait(false);
-                await statLock.WaitAsync().ConfigureAwait(false);
 
                 if (queryCount > 0)
                 {
@@ -105,10 +85,8 @@ namespace Bns.DnsClient.App
                     Console.WriteLine("Latency stats queue is empty.");
                 }
 
-                queryCount = 0;
-                latencySum = 0;
-
-                statLock.Release();
+                Interlocked.Exchange(ref queryCount, 0);
+                Interlocked.Exchange(ref latencySum,  0);
             }
         }
 
@@ -182,10 +160,8 @@ namespace Bns.DnsClient.App
 
             var dnsResponseMessage = this.dnsSerializer.Deserialize(result.Buffer);
 
-            await statLock.WaitAsync().ConfigureAwait(false);
-            latencySum += ms;
-            queryCount++;
-            statLock.Release();
+            Interlocked.Add(ref latencySum, ms);
+            Interlocked.Add(ref queryCount, 1);
         }
     }
 }

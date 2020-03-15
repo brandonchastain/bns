@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Bns.StubResolver.Core
 {
-    internal class EmptyResolutionStrategy : IResolutionStrategy
+    public class EmptyResolutionStrategy : IResolutionStrategy
     {
         private static readonly DnsMessage response = new DnsMessage()
         {
