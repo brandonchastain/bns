@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Bns.StubResolver.Udp
 {
     public class UdpListener
-    { 
+    {
         private readonly int listenPort;
         private ProcessMessageAsync processMessageCallback;
         private UdpClient listener;

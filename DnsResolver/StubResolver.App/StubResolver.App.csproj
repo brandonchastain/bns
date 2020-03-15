@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Core\DnsResolver.Core.csproj" />
+    <ProjectReference Include="..\DnsResolver.Core\DnsResolver.Core.csproj" />
   </ItemGroup>
 
 </Project>

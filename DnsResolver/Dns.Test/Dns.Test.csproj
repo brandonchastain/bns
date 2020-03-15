@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Dns.Serialization\Dns.Serialization.Binary.csproj" />
+    <ProjectReference Include="..\Dns.Serialization.Binary\Dns.Serialization.Binary.csproj" />
     <ProjectReference Include="..\Dns\Dns.csproj" />
   </ItemGroup>
 

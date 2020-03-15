@@ -26,7 +26,7 @@ namespace Bns.StubResolver.Core
             this.resolutionStrategy = resolutionStrategy ?? throw new ArgumentNullException(nameof(resolutionStrategy));
             this.dnsSerializer = dnsSerializer ?? throw new ArgumentNullException(nameof(dnsSerializer));
 
-            this.listenPort = (ushort)options.CurrentValue.Port;
+            this.listenPort = (ushort)options.CurrentValue.ListenPort;
             this.listener = new UdpListener(ProcessRawQuery, this.listenPort);
         }
 
@@ -42,11 +42,11 @@ namespace Bns.StubResolver.Core
             var dnsMessage = this.dnsSerializer.Deserialize(udpMessage.Buffer);
             var response = await this.resolutionStrategy.ResolveAsync(dnsMessage.Question);
 
-            if (response.Answers.Count == 0)
-            {
-                Console.WriteLine($"No answer found for question from endpoint={udpMessage.Source}:");
-                Console.WriteLine($"{new DnsJsonSerializer().ToJson(dnsMessage.Question)}");
-            }
+            //if (response.Answers.Count == 0)
+            //{
+            //    Console.WriteLine($"No answer found for question from endpoint={udpMessage.Source}:");
+            //    Console.WriteLine($"{new DnsJsonSerializer().ToJson(dnsMessage.Question)}");
+            //}
 
             dnsMessage.AddAnswersAndIncrementCount(response.Answers);
             dnsMessage.AddAuthorityAndIncrementCount(response.Authority);

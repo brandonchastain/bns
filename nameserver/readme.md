@@ -1,7 +1,7 @@
 # BNS
 Brandon's Name Server
 
-Simple domain name server and client. 
+An extremely simple, incomplete, and dangerously naive domain name server. Testing purposes only.
 
 ---
 
