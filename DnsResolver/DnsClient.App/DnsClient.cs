@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
@@ -14,46 +13,44 @@ using System.Threading.Tasks;
 
 namespace Bns.DnsClient.App
 {
-    public class DnsClient
+    public class DnsClient : IDisposable
     {
-        private static IConfiguration Configuration { get; set; }
+        private static IConfiguration configuration;
+        private static DnsClient client;
 
         private readonly IDnsMsgBinSerializer dnsSerializer;
         private readonly IOptionsMonitor<DnsClientOptions> options;
 
-        private long latencySum = 0;
-        private int queryCount = 0;
+        private UdpClient udpClient;
+        private IPEndPoint endpoint;
+        private long intervalLatencySum;
+        private int intervalQueryCount;
 
         public DnsClient(IDnsMsgBinSerializer dnsSerializer, IOptionsMonitor<DnsClientOptions> options)
         {
             this.dnsSerializer = dnsSerializer ?? throw new ArgumentNullException(nameof(dnsSerializer));
             this.options = options ?? throw new ArgumentNullException(nameof(options));
+            this.intervalLatencySum = 0;
+            this.intervalQueryCount = 0;
         }
 
         public static async Task Main(string[] args)
         {
-            Configuration = new ConfigurationBuilder().AddCommandLine(args).Build();
+            BuildClientConfigFromArgs(args);
+            InitializeClient();
+            await RunDnsLatencyTest().ConfigureAwait(false);
+        }
 
-            var services = ConfigureServices(Configuration);
-            var client = services.GetRequiredService<DnsClient>();
-            Console.WriteLine($"Sending DNS queries to {client.options.CurrentValue.NsIpAddress}... (press CTRL-C to quit)\n");
+        private static void BuildClientConfigFromArgs(string[] commandLineArgs)
+        {
+            configuration = new ConfigurationBuilder().AddCommandLine(commandLineArgs).Build();
+        }
 
-            var sendTasks = new List<Task>();
-
-            for (int i = 0; i < 100; i++)
-            {
-                sendTasks.Add(Task.Run(() => TaskUtil.RunAndWaitForCancel(
-                            client.SendQueriesAsync(),
-                            CancellationToken.None,
-                            cleanup: null)));
-            }
-
-            var reportTask = TaskUtil.RunAndWaitForCancel(
-                client.ReportLatencyAsync(),
-                CancellationToken.None,
-                cleanup: null);
-
-            await Task.WhenAny(Task.WhenAny(sendTasks), reportTask).ConfigureAwait(false);
+        private static void InitializeClient()
+        {
+            var services = ConfigureServices(configuration);
+            client = services.GetRequiredService<DnsClient>();
+            client.BuildNameserverEndpoint();
         }
 
         private static IServiceProvider ConfigureServices(IConfiguration config)
@@ -70,58 +67,86 @@ namespace Bns.DnsClient.App
             return services.BuildServiceProvider();
         }
 
-        private async Task ReportLatencyAsync()
+        private void BuildNameserverEndpoint()
         {
-            while(true)
-            {
-                await Task.Delay(2000).ConfigureAwait(false);
-
-                if (queryCount > 0)
-                {
-                    Console.WriteLine($"[queryCount: {queryCount} | meanLatencyMs: {latencySum / queryCount}]");
-                }
-                else
-                {
-                    Console.WriteLine("Latency stats queue is empty.");
-                }
-
-                Interlocked.Exchange(ref queryCount, 0);
-                Interlocked.Exchange(ref latencySum,  0);
-            }
+            var ipAddress = IPAddress.Parse(options.CurrentValue.NsIpAddress);
+            var port = 53;
+            this.endpoint = new IPEndPoint(ipAddress, port);
         }
 
-        private async Task SendQueriesAsync()
+        private static async Task RunDnsLatencyTest()
+        {
+            var sendQueries = SendQueriesAsync();
+            var logReports = LogReportsAsync();
+            await Task.WhenAny(sendQueries, logReports).ConfigureAwait(false);
+        }
+
+        private static Task SendQueriesAsync()
+        {
+            Console.WriteLine($"Sending DNS queries to {client.options.CurrentValue.NsIpAddress}... (press CTRL-C to quit)\n");
+            return TaskUtil.RunAndWaitForCancel(
+                client.SendQueryLoop(),
+                CancellationToken.None,
+                cleanup: null);
+        }
+
+        private async Task SendQueryLoop()
         {
             while (true)
             {
                 try
                 {
-                    using (var udpClient = new UdpClient())
-                    {
-                        await SendDnsQueryAsync(udpClient).ConfigureAwait(false);
-                        //await Task.Delay(10);
-
-                    }
+                    await SendQuery().ConfigureAwait(false);
                 }
                 catch (SocketException ex)
                 {
-                    Console.WriteLine("Encountered a SocketException when sending dns queries:");
-                    Console.WriteLine(ex);
-
-                    Console.WriteLine("Trying again...");
+                    this.HandleSocketException(ex);
                 }
             }
         }
 
-        // TODO: Send a sliding window of 10 requests in parallel.
-        private async Task SendDnsQueryAsync(UdpClient udpClient)
+        private async Task SendQuery()
         {
-            var ipAddress = IPAddress.Parse(options.CurrentValue.NsIpAddress);
-            var port = 53;
-            var endpoint = new IPEndPoint(ipAddress, port);
-            var dnsMessage = new DnsMessage();
+            using (udpClient = new UdpClient())
+            {
+                await this.MeasureDnsQueryLatency().ConfigureAwait(false);
+            }
+            udpClient = null;
+        }
 
-            dnsMessage.Header = new Header()
+        // TODO: Send a sliding window of 10 requests in parallel.
+        private async Task MeasureDnsQueryLatency()
+        {
+            await this.SendDnsMessage().ConfigureAwait(false);
+            await this.MeasureTimeToReceiveResponse().ConfigureAwait(false);
+        }
+
+
+        private async Task<int> SendDnsMessage()
+        {
+            var dnsMessage = this.GetSampleDnsMessage();
+            var bytes = this.dnsSerializer.Serialize(dnsMessage);
+            var bytesSent = await udpClient.SendAsync(bytes, bytes.Length, endpoint).ConfigureAwait(false);
+
+            if (bytesSent != bytes.Length)
+            {
+                Console.WriteLine("Could not send entire query.");
+            }
+
+            return bytesSent;
+        }
+
+        private DnsMessage GetSampleDnsMessage()
+        {
+            var dnsMessage = new DnsMessage();
+            dnsMessage.Header = MakeHeader();
+            dnsMessage.Question = MakeQuestion();
+            return dnsMessage;
+        }
+
+        private Header MakeHeader()
+        {
+            return new Header()
             {
                 Id = 2929,
                 Opcode = HeaderOpCode.StandardQuery,
@@ -129,39 +154,119 @@ namespace Bns.DnsClient.App
                 RecursionDesired = true,
                 Z = 0,
             };
+        }
 
-            dnsMessage.Question = new Question()
+        private Question MakeQuestion()
+        {
+            return new Question()
             {
                 QClass = RecordClass.IN,
                 QType = RecordType.A,
                 QName = "mobile.pipe.aria.microsoft.com",
             };
+        }
 
-            var bytes = this.dnsSerializer.Serialize(dnsMessage);
-            var bytesSentTask = udpClient.SendAsync(bytes, bytes.Length, endpoint).ConfigureAwait(false);
+        private async Task MeasureTimeToReceiveResponse()
+        {
             var stopwatch = Stopwatch.StartNew();
-
-            var bytesSent = await bytesSentTask;
-            if (bytesSent != bytes.Length)
+            var result = await ReceiveAsync().ConfigureAwait(false);
+            if (result != null)
             {
-                Console.WriteLine("Could not send entire query.");
+                IncrementLatencyStats((int)stopwatch.ElapsedMilliseconds);
             }
+        }
 
-            var timeout = Task.Delay(6000);
+        private void HandleSocketException(SocketException ex)
+        {
+            Console.WriteLine("Encountered a SocketException when sending dns queries:");
+            Console.WriteLine(ex);
+
+            Console.WriteLine("Trying again...");
+        }
+
+        private static Task LogReportsAsync()
+        {
+            return TaskUtil.RunAndWaitForCancel(
+                client.ReportLatencyAsync(),
+                CancellationToken.None,
+                cleanup: null);
+        }
+
+        private async Task ReportLatencyAsync()
+        {
+            while (true)
+            {
+                await WaitForReportingInterval().ConfigureAwait(false);
+                PrintLastIntervalLatency();
+                ResetStats();
+            }
+        }
+
+        private async Task WaitForReportingInterval()
+        {
+            var reportInterval = TimeSpan.FromSeconds(2);
+            await Task.Delay(reportInterval).ConfigureAwait(false);
+        }
+
+        private void PrintLastIntervalLatency()
+        {
+            if (intervalQueryCount > 0)
+            {
+                Console.WriteLine($"[queryCount: {intervalQueryCount} | meanLatencyMs: {intervalLatencySum / intervalQueryCount}]");
+            }
+            else
+            {
+                Console.WriteLine("Latency stats queue is empty.");
+            }
+        }
+
+        private void ResetStats()
+        {
+            Interlocked.Exchange(ref intervalQueryCount, 0);
+            Interlocked.Exchange(ref intervalLatencySum, 0);
+        }
+
+        private async Task<UdpReceiveResult?> ReceiveAsync()
+        {
+            var maxDnsTimeout = TimeSpan.FromSeconds(6);
+            var timeout = Task.Delay(maxDnsTimeout);
             Task completedTask = await Task.WhenAny(udpClient.ReceiveAsync(), timeout).ConfigureAwait(false);
             if (completedTask == timeout)
             {
-                return;
+                return null;
             }
 
             var udpTask = (Task<UdpReceiveResult>)completedTask;
             var result = await udpTask.ConfigureAwait(false);
-            var ms = stopwatch.ElapsedMilliseconds;
-
-            var dnsResponseMessage = this.dnsSerializer.Deserialize(result.Buffer);
-
-            Interlocked.Add(ref latencySum, ms);
-            Interlocked.Add(ref queryCount, 1);
+            return result;
         }
+
+        private void IncrementLatencyStats(int latencyMs)
+        {
+            Interlocked.Add(ref intervalLatencySum, latencyMs);
+            Interlocked.Add(ref intervalQueryCount, 1);
+        }
+
+        #region IDisposable Support
+        private bool disposedValue = false;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    udpClient?.Dispose();
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+        #endregion
     }
 }

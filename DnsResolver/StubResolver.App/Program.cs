@@ -32,7 +32,7 @@ namespace StubResolverApp
             services.AddTransient<DnsQuestionBinarySerializer>();
             services.AddTransient<ResourceRecordBinarySerializer>();
             services.AddTransient<IDnsMsgBinSerializer, DnsMessageBinarySerializer>();
-            services.AddTransient<IResolutionStrategy, StubResolutionStrategy>();
+            services.AddTransient<IResolutionStrategy, EmptyResolutionStrategy>();
             services.AddTransient<DnsResolver>();
         }
 
