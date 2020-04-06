@@ -22,7 +22,7 @@ namespace Dns.Test
         public void TestDeserializeHeader()
         {
             var b = new byte[] { 0xdf, 0xa8, 0x80, 0xa0, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00 };
-            var header = DnsMessageBinarySerializer.DeserializeHeader(b);
+            var header = serializer.DeserializeHeader(b);
             Assert.AreEqual(header.Id, 57256);
             Assert.IsTrue(header.IsResponse);
             Assert.AreEqual(HeaderOpCode.StandardQuery, header.Opcode);
@@ -42,7 +42,7 @@ namespace Dns.Test
         public void TestSerializeHeader()
         {
             var b = new byte[] { 0xdf, 0xa8, 0x80, 0xa0, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00 };
-            var header = DnsMessageBinarySerializer.DeserializeHeader(b);
+            var header = serializer.DeserializeHeader(b);
             var newB = header.ToByteArray();
             Assert.AreEqual(b, newB);
         }

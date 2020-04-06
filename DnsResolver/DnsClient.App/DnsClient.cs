@@ -90,6 +90,14 @@ namespace Bns.DnsClient.App
                 cleanup: null);
         }
 
+        private static Task LogReportsAsync()
+        {
+            return TaskUtil.RunAndWaitForCancel(
+                client.ReportLatencyAsync(),
+                CancellationToken.None,
+                cleanup: null);
+        }
+
         private async Task SendQueryLoop()
         {
             while (true)
@@ -105,42 +113,31 @@ namespace Bns.DnsClient.App
             }
         }
 
+        // TODO: Send a sliding window of 10 requests in parallel.
         private async Task SendQuery()
         {
             using (udpClient = new UdpClient())
             {
-                await this.MeasureDnsQueryLatency().ConfigureAwait(false);
+                await this.SendDnsMessage().ConfigureAwait(false);
+                await this.MeasureTimeToReceiveResponse().ConfigureAwait(false);
             }
             udpClient = null;
         }
 
-        // TODO: Send a sliding window of 10 requests in parallel.
-        private async Task MeasureDnsQueryLatency()
-        {
-            await this.SendDnsMessage().ConfigureAwait(false);
-            await this.MeasureTimeToReceiveResponse().ConfigureAwait(false);
-        }
-
-
         private async Task<int> SendDnsMessage()
         {
             var dnsMessage = this.GetSampleDnsMessage();
-            var bytes = this.dnsSerializer.Serialize(dnsMessage);
-            var bytesSent = await udpClient.SendAsync(bytes, bytes.Length, endpoint).ConfigureAwait(false);
-
-            if (bytesSent != bytes.Length)
-            {
-                Console.WriteLine("Could not send entire query.");
-            }
-
+            var bytesSent = await SendSerializedDnsMessage(dnsMessage).ConfigureAwait(false);
             return bytesSent;
         }
 
         private DnsMessage GetSampleDnsMessage()
         {
-            var dnsMessage = new DnsMessage();
-            dnsMessage.Header = MakeHeader();
-            dnsMessage.Question = MakeQuestion();
+            var dnsMessage = new DnsMessage()
+            {
+                Header = MakeHeader(),
+                Question = MakeQuestion()
+            };
             return dnsMessage;
         }
 
@@ -166,6 +163,19 @@ namespace Bns.DnsClient.App
             };
         }
 
+        private async Task<int> SendSerializedDnsMessage(DnsMessage dnsMessage)
+        {
+            var bytes = this.dnsSerializer.Serialize(dnsMessage);
+            var bytesSent = await udpClient.SendAsync(bytes, bytes.Length, endpoint).ConfigureAwait(false);
+
+            if (bytesSent != bytes.Length)
+            {
+                Console.WriteLine("Could not send entire query.");
+            }
+
+            return bytesSent;
+        }
+
         private async Task MeasureTimeToReceiveResponse()
         {
             var stopwatch = Stopwatch.StartNew();
@@ -182,14 +192,6 @@ namespace Bns.DnsClient.App
             Console.WriteLine(ex);
 
             Console.WriteLine("Trying again...");
-        }
-
-        private static Task LogReportsAsync()
-        {
-            return TaskUtil.RunAndWaitForCancel(
-                client.ReportLatencyAsync(),
-                CancellationToken.None,
-                cleanup: null);
         }
 
         private async Task ReportLatencyAsync()

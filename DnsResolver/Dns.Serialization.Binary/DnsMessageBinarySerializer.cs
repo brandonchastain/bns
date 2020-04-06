@@ -10,6 +10,9 @@ namespace Bns.Dns.Serialization
         private DnsQuestionBinarySerializer qSerializer;
         private ResourceRecordBinarySerializer rrSerializer;
 
+        private DnsMessage result;
+        private int start;
+
         public DnsMessageBinarySerializer(ResourceRecordBinarySerializer rrSer, DnsQuestionBinarySerializer qSerializer)
         {
             this.rrSerializer = rrSer ?? throw new ArgumentNullException(nameof(rrSer));
@@ -18,58 +21,57 @@ namespace Bns.Dns.Serialization
 
         public DnsMessage Deserialize(byte[] buffer)
         {
-            var result = new DnsMessage();
+            result = new DnsMessage();
             result.Header = DeserializeHeader(buffer);
-            int start = 12;
-
-            result.Question = this.qSerializer.DeserializeBytes(buffer, start, out var questionBytesRead);
-            start += questionBytesRead;
-
-            var rrBytesRead = 0;
-
-            result.Answers = new List<ResourceRecord>();
-            for (int i = 0; i < result.Header.AnswerCount; i++)
-            {
-                var answerRecord = rrSerializer.FromBytes(buffer, start + rrBytesRead, out var rrBytes);
-                rrBytesRead += rrBytes;
-
-                if (answerRecord != null)
-                {
-                    result.AddAnswer(answerRecord);
-                }
-            }
-
-            result.Authority = new List<ResourceRecord>();
-            for (int i = 0; i < result.Header.AuthorityCount; i++)
-            {
-                var rrSer = new ResourceRecordBinarySerializer(new DnsQuestionBinarySerializer());
-                var authRec = rrSer.FromBytes(buffer, start + rrBytesRead, out var rrBytes);
-                rrBytesRead += rrBytes;
-
-                if (authRec != null)
-                {
-                    result.AddAuthority(authRec);
-                }
-            }
-
-            result.Additional = new List<ResourceRecord>();
-            for (int i = 0; i < result.Header.AddtlCount; i++)
-            {
-                var rrSer = new ResourceRecordBinarySerializer(new DnsQuestionBinarySerializer());
-                var addtlRec = rrSer.FromBytes(buffer, start + rrBytesRead, out var rrBytes);
-                rrBytesRead += rrBytes;
-
-                if (addtlRec != null)
-                {
-                    result.AddAuthority(addtlRec);
-                }
-            }
-
-
-            // var b = new DnsQuestionSerializer().SerializeQuestion(result.Question);
-            // HexPrinter.PrintBufferHex(b, b.Length);
-
+            result.Question = DeserializeQuestion(buffer);
+            result.Answers = DeserializeAnswers(buffer);
+            result.Authority = DeserializeAuthorities(buffer);
+            result.Additional = DeserializeAddtl(buffer);
             return result;
+        }
+
+        private Question DeserializeQuestion(byte[] buffer)
+        {
+            var question = this.qSerializer.DeserializeBytes(buffer, start, out var questionBytesRead);
+            start += questionBytesRead;
+            return question;
+        }
+
+        private List<ResourceRecord> DeserializeAnswers(byte[] buffer)
+        {
+            int count = result.Header.AnswerCount;
+            return DeserializeResourceRecords(buffer, count);
+        }
+
+        private List<ResourceRecord> DeserializeAuthorities(byte[] buffer)
+        {
+            int count = result.Header.AuthorityCount;
+            return DeserializeResourceRecords(buffer, count);
+        }
+
+        private List<ResourceRecord> DeserializeAddtl(byte[] buffer)
+        {
+            int count = result.Header.AddtlCount;
+            return DeserializeResourceRecords(buffer, count);
+        }
+
+        private List<ResourceRecord> DeserializeResourceRecords(byte[] buffer, int count)
+        {
+            var rrBytesRead = 0;
+            var answers = new List<ResourceRecord>();
+            for (int i = 0; i < count; i++)
+            {
+                var resourceRecord = rrSerializer.FromBytes(buffer, start + rrBytesRead, out var rrBytes);
+                rrBytesRead += rrBytes;
+
+                if (resourceRecord != null)
+                {
+                    answers.Add(resourceRecord);
+                }
+            }
+
+            start += rrBytesRead;
+            return answers;
         }
 
         public byte[] Serialize(DnsMessage dnsMessage)
@@ -99,7 +101,7 @@ namespace Bns.Dns.Serialization
         }
 
 
-        public static Header DeserializeHeader(byte[] buffer)
+        public Header DeserializeHeader(byte[] buffer)
         {
             if (buffer.Length < Header.MaxSizeInBytes)
             {
@@ -133,6 +135,8 @@ namespace Bns.Dns.Serialization
             header.AuthorityCount |= buffer[9];
             header.AddtlCount = (ushort)(buffer[10] << 8);
             header.AddtlCount |= buffer[11];
+
+            start += 12;
 
             return header;
         }
