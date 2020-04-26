@@ -12,5 +12,10 @@ namespace Bns.Dns.ResourceRecords
         public int Protocol { get; set; }
 
         public override RecordType GetRecordType() => RecordType.WKS;
+
+        public override byte[] ToByteArray()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

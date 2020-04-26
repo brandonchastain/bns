@@ -1,7 +1,7 @@
 ﻿using Bns.StubResolver.Udp.Contracts;
-using Bns.Dns.ResourceRecords;
 using System.Collections.Generic;
 using System;
+using Bns.Dns.ResourceRecords;
 
 namespace Bns.Dns
 {

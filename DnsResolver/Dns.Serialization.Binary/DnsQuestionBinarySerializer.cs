@@ -1,37 +1,14 @@
 ﻿using Bns.Dns.ResourceRecords;
+using Dns.Serialization.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Bns.Dns.Serialization
 {
     public class DnsQuestionBinarySerializer
     {
-        public List<byte> SerializeQName(string qname)
-        {
-            var wordBytes = new List<byte>();
-            int wordStart = 0;
-
-            int wordEnd = qname.IndexOf('.', wordStart);
-
-            int wordSize = wordEnd - wordStart;
-            while (wordSize > 0)
-            {
-                wordBytes.Add((byte)wordSize);
-                for (int c = 0; c < wordSize; c++)
-                {
-                    wordBytes.Add((byte)(qname[wordStart + c]));
-                }
-
-                wordStart = wordEnd + 1;
-                wordEnd = qname.IndexOf('.', wordStart);
-                wordSize = wordEnd - wordStart;
-            }
-
-            wordBytes.Add(0);
-
-            return wordBytes;
-        }
 
         public byte[] SerializeQuestion(Question q)
         {
@@ -40,7 +17,7 @@ namespace Bns.Dns.Serialization
                 return null;
             }
 
-            var wordBytes = SerializeQName(q.QName);
+            var wordBytes = QNameSerializer.SerializeQName(q.QName);
 
             wordBytes.AppendIntAs2Bytes((int)q.QType + 1);
             wordBytes.AppendIntAs2Bytes((int)q.QClass + 1);

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>Bns.ResourceRecords</RootNamespace>
+    <AssemblyName>Bns.ResourceRecords</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Dns.Serialization.Utils\Dns.Serialization.Utils.csproj" />
+  </ItemGroup>
+
+</Project>

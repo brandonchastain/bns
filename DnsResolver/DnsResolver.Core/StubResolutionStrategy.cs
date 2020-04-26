@@ -12,8 +12,6 @@ namespace Bns.StubResolver.Core
 
     public class StubResolutionStrategy : IResolutionStrategy
     {
-        private static readonly TimeSpan ListenTimeout = TimeSpan.FromMilliseconds(200);
-
         private readonly IDnsMsgBinSerializer dnsSerializer;
         private readonly IOptionsMonitor<ResolverOptions> options;
 

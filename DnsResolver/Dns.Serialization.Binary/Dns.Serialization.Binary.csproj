@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Dns\Dns.csproj" />
+    <ProjectReference Include="..\ResourceRecords\ResourceRecords.csproj" />
   </ItemGroup>
 
 </Project>

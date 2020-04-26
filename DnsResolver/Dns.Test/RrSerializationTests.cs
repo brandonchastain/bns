@@ -26,7 +26,7 @@ namespace Dns.Test
                                 0x00, 0x04,
                                 0xc0, 0xa8, 0x01, 0x01};
 
-            var serialized = serializer.ToByteArray(aRecord);
+            var serialized = aRecord.ToByteArray();
             Assert.AreEqual(expected, serialized);
         }
 
@@ -48,7 +48,7 @@ namespace Dns.Test
                                 0x00, 0x05,
                                 0x03, 0x61, 0x61, 0x61, 0x00};
 
-            var serialized = serializer.ToByteArray(cname);
+            var serialized = cname.ToByteArray();
             Assert.AreEqual(expected, serialized);
         }
 
@@ -70,7 +70,7 @@ namespace Dns.Test
                                 0x00, 0x05,
                                 0x03, 0x61, 0x61, 0x61, 0x00};
 
-            var serialized = serializer.ToByteArray(ns);
+            var serialized = ns.ToByteArray();
             Assert.AreEqual(expected, serialized);
         }
 

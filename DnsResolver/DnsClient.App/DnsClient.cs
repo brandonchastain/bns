@@ -268,6 +268,7 @@ namespace Bns.DnsClient.App
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
         #endregion
     }

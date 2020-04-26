@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Bns.Dns.Serialization
+namespace BinaryReader
 {
-    internal static class ByteArrayExtensions
+    public class BinaryIntReader
     {
-        public static void AppendIntAs2Bytes(this IList<byte> bytes, int val)
+        public static void AppendIntAs2Bytes(IList<byte> bytes, int val)
         {
             if (bytes == null)
             {
@@ -16,7 +16,7 @@ namespace Bns.Dns.Serialization
             bytes.Add((byte)val);
         }
 
-        public static void AppendIntAs4Bytes(this IList<byte> bytes, int val)
+        public static void AppendIntAs4Bytes(IList<byte> bytes, int val)
         {
             if (bytes == null)
             {

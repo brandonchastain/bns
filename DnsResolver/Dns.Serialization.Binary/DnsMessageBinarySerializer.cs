@@ -61,7 +61,8 @@ namespace Bns.Dns.Serialization
             var answers = new List<ResourceRecord>();
             for (int i = 0; i < count; i++)
             {
-                var resourceRecord = rrSerializer.FromBytes(buffer, start + rrBytesRead, out var rrBytes);
+                int rrStart = start + rrBytesRead;
+                var resourceRecord = rrSerializer.FromBytes(buffer, rrStart, out var rrBytes);
                 rrBytesRead += rrBytes;
 
                 if (resourceRecord != null)
@@ -84,17 +85,17 @@ namespace Bns.Dns.Serialization
 
             foreach (var ans in dnsMessage.Answers)
             {
-                resultBytes.AddRange(this.rrSerializer.ToByteArray(ans));
+                resultBytes.AddRange(ans.ToByteArray());
             }
 
             foreach (var auth in dnsMessage.Authority)
             {
-                resultBytes.AddRange(this.rrSerializer.ToByteArray(auth));
+                resultBytes.AddRange(auth.ToByteArray());
             }
 
             foreach (var addtl in dnsMessage.Additional)
             {
-                resultBytes.AddRange(this.rrSerializer.ToByteArray(addtl));
+                resultBytes.AddRange(addtl.ToByteArray());
             }
 
             return resultBytes.ToArray();

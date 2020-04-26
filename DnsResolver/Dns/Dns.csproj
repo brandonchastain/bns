@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Dns.Serialization.Json\Dns.Serialization.Json.csproj" />
+    <ProjectReference Include="..\ResourceRecords\ResourceRecords.csproj" />
     <ProjectReference Include="..\UdpListener\Udp.csproj" />
   </ItemGroup>
 
