@@ -17,3 +17,6 @@ test
 
 # OS files
 .DS_Store
+
+# Development settings
+appsettings.Development.json
