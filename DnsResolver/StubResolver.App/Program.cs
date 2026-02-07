@@ -29,11 +29,11 @@ namespace StubResolverApp
             services.AddOptions<ResolverOptions>();
             services.Configure<ResolverOptions>(config);
 
-            services.AddTransient<DnsQuestionBinarySerializer>();
-            services.AddTransient<ResourceRecordBinarySerializer>();
-            services.AddTransient<IDnsMsgBinSerializer, DnsMessageBinarySerializer>();
-            services.AddTransient<IResolutionStrategy, StubResolutionStrategy>();
-            services.AddTransient<DnsResolver>();
+            services.AddSingleton<DnsQuestionBinarySerializer>();
+            services.AddSingleton<ResourceRecordBinarySerializer>();
+            services.AddSingleton<IDnsMsgBinSerializer, DnsMessageBinarySerializer>();
+            services.AddSingleton<IResolutionStrategy, StubResolutionStrategy>();
+            services.AddSingleton<DnsResolver>();
         }
 
         private static async Task Start(IServiceProvider services)
@@ -48,7 +48,13 @@ namespace StubResolverApp
 
         private static IConfiguration BuildConfig(string[] args)
         {
-            return new ConfigurationBuilder().AddCommandLine(args).Build();
+            var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Development";
+            
+            return new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: true)
+                .AddJsonFile($"appsettings.{environment}.json", optional: true)
+                .AddCommandLine(args)
+                .Build();
         }
         
         private static void SigintHandler(object sender, ConsoleCancelEventArgs args)

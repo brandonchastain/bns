@@ -9,8 +9,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Dns.Serialization.Binary\Dns.Serialization.Binary.csproj" />
-    <ProjectReference Include="..\Dns\Dns.csproj" />
+    <ProjectReference Include="..\Core\Dns\Serialization\Binary\Dns.Serialization.Binary.csproj" />
+    <ProjectReference Include="..\Core\Dns\Protocol\Protocol.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

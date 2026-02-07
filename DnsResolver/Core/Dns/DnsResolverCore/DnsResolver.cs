@@ -41,7 +41,7 @@ namespace Bns.StubResolver.Core
         {
             var dnsMessage = this.dnsSerializer.Deserialize(udpMessage.Buffer);
             
-            Console.WriteLine($"{dnsMessage.Question.QClass} {dnsMessage.Question.QType}Received query for {dnsMessage.Question.QName} of type {dnsMessage.Question.QType}. ");
+            Console.WriteLine($"[QUERY] {dnsMessage.Question.QClass} {dnsMessage.Question.QType} {dnsMessage.Question.QName}");
 
             var response = await this.resolutionStrategy.ResolveAsync(dnsMessage.Question);
 
@@ -60,7 +60,7 @@ namespace Bns.StubResolver.Core
 
             byte[] serializedResponse = this.dnsSerializer.Serialize(dnsMessage);
 
-            Console.WriteLine($"{response.Question.QClass} {response.Question.QType}Responding with {response.Answers.Count} answers, {response.Authority.Count} authority records, and {response.Additional.Count} additional records.\n");
+            Console.WriteLine($"[RESPONSE] {response.Question.QClass} {response.Question.QType} {response.Question.QName} - {(ResponseCode)response.Header.Rcode} (Answers: {response.Answers.Count}, Authority: {response.Authority.Count}, Additional: {response.Additional.Count})\n");
 
             return serializedResponse;
         }

@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Dns.Serialization.Utils\Dns.Serialization.Utils.csproj" />
+    <ProjectReference Include="..\Serialization\Utils\Dns.Serialization.Utils.csproj" />
   </ItemGroup>
 
 </Project>

@@ -15,16 +15,17 @@ namespace Bns.Dns.ResourceRecords
 
         public override byte[] ToByteArray()
         {
-            var bytes = new List<byte>();
+            var bytes = this.SerializeCommonFields();
             var textDataBytes = Encoding.ASCII.GetBytes(this.TextData);
 
-            if (this.Length != textDataBytes.Length)
-            {
-                Console.WriteLine("TXT record length mismatch detected during serialization.");
-            }
+            // Build RDATA: 1-byte length prefix followed by character-string
+            var rdata = new List<byte>();
+            rdata.Add((byte)textDataBytes.Length);
+            rdata.AddRange(textDataBytes);
 
-            bytes.AppendIntAs2Bytes(this.Length);
-            bytes.AddRange(textDataBytes);
+            // Append RDLENGTH (2 bytes) then RDATA
+            bytes.AppendIntAs2Bytes(rdata.Count);
+            bytes.AddRange(rdata);
 
             return bytes.ToArray();
         }

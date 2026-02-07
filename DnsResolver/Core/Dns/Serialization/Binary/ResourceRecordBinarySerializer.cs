@@ -40,7 +40,7 @@ namespace Bns.Dns.Serialization
                     {
                         Name = name,
                         TimeToLive = timeToLive,
-                        Address = new System.Net.IPAddress(new ReadOnlySpan<byte>(bytes, start + totalBytesRead, ARecord.Length)),
+                        Address = new System.Net.IPAddress(new ReadOnlySpan<byte>(bytes, start + totalBytesRead, ARecord.RDataLength)),
                     };
                     break;
                 case RecordType.AAAA:
@@ -48,7 +48,7 @@ namespace Bns.Dns.Serialization
                     {
                         Name = name,
                         TimeToLive = timeToLive,
-                        Address = new System.Net.IPAddress(new ReadOnlySpan<byte>(bytes, start + totalBytesRead, AAAARecord.Length)),
+                        Address = new System.Net.IPAddress(new ReadOnlySpan<byte>(bytes, start + totalBytesRead, AAAARecord.RDataLength)),
                     };
                     break;
                 case RecordType.CNAME:
@@ -126,10 +126,23 @@ namespace Bns.Dns.Serialization
                 Length = length
             };
 
-            var wordBytes = new byte[length];
-            Array.Copy(bytes, start, wordBytes, 0, length);
-            txt.TextData = Encoding.ASCII.GetString(wordBytes);
+            // TXT records consist of one or more character-strings
+            // Each character-string has a 1-byte length prefix followed by that many bytes
+            var offset = 0;
+            var textParts = new List<string>();
+            
+            while (offset < length)
+            {
+                var strLength = bytes[start + offset];
+                offset++;
+                
+                var strBytes = new byte[strLength];
+                Array.Copy(bytes, start + offset, strBytes, 0, strLength);
+                textParts.Add(Encoding.ASCII.GetString(strBytes));
+                offset += strLength;
+            }
 
+            txt.TextData = string.Join("", textParts);
             bytesRead = length;
 
             return txt;

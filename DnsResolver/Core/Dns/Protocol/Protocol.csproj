@@ -9,9 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Dns.Serialization.Json\Dns.Serialization.Json.csproj" />
+    <ProjectReference Include="..\Serialization\Json\Dns.Serialization.Json.csproj" />
     <ProjectReference Include="..\ResourceRecords\ResourceRecords.csproj" />
-    <ProjectReference Include="..\UdpListener\Udp.csproj" />
+    <ProjectReference Include="..\..\Udp\UdpListener\Udp.csproj" />
   </ItemGroup>
 
 </Project>

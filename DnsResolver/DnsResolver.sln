@@ -5,27 +5,27 @@ VisualStudioVersion = 16.0.29509.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StubResolver.App", "StubResolver.App\StubResolver.App.csproj", "{7CDB300C-D254-44B8-A270-B7E73223642C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns", "Dns\Dns.csproj", "{6DB95E4C-FF1E-48FD-9558-057B3661D4F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Protocol", "Core\Dns\Protocol\Protocol.csproj", "{6DB95E4C-FF1E-48FD-9558-057B3661D4F0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DnsResolver.Core", "DnsResolver.Core\DnsResolver.Core.csproj", "{54E414A7-1867-41F9-BB2E-6E8BB19BED11}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DnsResolverCore", "Core\Dns\DnsResolverCore\DnsResolverCore.csproj", "{54E414A7-1867-41F9-BB2E-6E8BB19BED11}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.Test", "Dns.Test\Dns.Test.csproj", "{64B44EA0-C487-41EF-82EA-44A0FA406582}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Core\Dns\Tests\Tests.csproj", "{64B44EA0-C487-41EF-82EA-44A0FA406582}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Udp", "UdpListener\Udp.csproj", "{40B89BA1-BA72-4B3B-9CCC-787507552F5F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Udp", "Core\Udp\UdpListener\Udp.csproj", "{40B89BA1-BA72-4B3B-9CCC-787507552F5F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Udp.Contracts", "Udp.Contracts\Udp.Contracts.csproj", "{B7C8CCAC-7999-41B0-AF90-89F881A9547F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Udp.Contracts", "Core\Udp\Udp.Contracts\Udp.Contracts.csproj", "{B7C8CCAC-7999-41B0-AF90-89F881A9547F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "Common\Common.csproj", "{1776E3D1-A2F6-41C4-8BC7-9D15D4801860}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DnsClient.App", "DnsClient.App\DnsClient.App.csproj", "{614015C3-2EFD-4D2A-81EC-1F65F3AD7C50}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.Serialization.Binary", "Dns.Serialization.Binary\Dns.Serialization.Binary.csproj", "{8CC9E840-D6D2-464A-8F39-3E41D9847A1C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.Serialization.Binary", "Core\Dns\Serialization\Binary\Dns.Serialization.Binary.csproj", "{8CC9E840-D6D2-464A-8F39-3E41D9847A1C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.Serialization.Json", "Dns.Serialization.Json\Dns.Serialization.Json.csproj", "{6F39D9EA-7A71-46B2-823F-76F1EA1C0261}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.Serialization.Json", "Core\Dns\Serialization\Json\Dns.Serialization.Json.csproj", "{6F39D9EA-7A71-46B2-823F-76F1EA1C0261}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResourceRecords", "ResourceRecords\ResourceRecords.csproj", "{0AAEEA3D-3A07-471A-A7C3-6490768D70A9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResourceRecords", "Core\Dns\ResourceRecords\ResourceRecords.csproj", "{0AAEEA3D-3A07-471A-A7C3-6490768D70A9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dns.Serialization.Utils", "Dns.Serialization.Utils\Dns.Serialization.Utils.csproj", "{C1A05A0E-4BD3-4BB2-9937-557E344D5CDC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dns.Serialization.Utils", "Core\Dns\Serialization\Utils\Dns.Serialization.Utils.csproj", "{C1A05A0E-4BD3-4BB2-9937-557E344D5CDC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

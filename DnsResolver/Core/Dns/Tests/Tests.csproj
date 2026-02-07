@@ -13,8 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Dns.Serialization.Binary\Dns.Serialization.Binary.csproj" />
-    <ProjectReference Include="..\Dns\Dns.csproj" />
+    <ProjectReference Include="..\Serialization\Binary\Dns.Serialization.Binary.csproj" />
+    <ProjectReference Include="..\Protocol\Protocol.csproj" />
   </ItemGroup>
 
   <ItemGroup>

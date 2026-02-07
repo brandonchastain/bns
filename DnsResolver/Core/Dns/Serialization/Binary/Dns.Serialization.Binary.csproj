@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Dns\Dns.csproj" />
-    <ProjectReference Include="..\ResourceRecords\ResourceRecords.csproj" />
+    <ProjectReference Include="..\..\Protocol\Protocol.csproj" />
+    <ProjectReference Include="..\..\ResourceRecords\ResourceRecords.csproj" />
   </ItemGroup>
 
 </Project>

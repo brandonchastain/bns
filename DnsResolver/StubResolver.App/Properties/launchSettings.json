@@ -1,8 +1,7 @@
 {
   "profiles": {
     "App": {
-      "commandName": "Project",
-      "commandLineArgs": "--ListenPort 8080 --RrIpAddress 0.0.0.0"
+      "commandName": "Project"
     }
   }
 }

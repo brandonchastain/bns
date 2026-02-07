@@ -5,20 +5,20 @@ using System.Net;
 
 namespace Bns.Dns.ResourceRecords
 {
-    public class ARecord : ResourceRecord
+    public class AAAARecord : ResourceRecord
     {
-        public const int Length = 4;
+        public const int RDataLength = 16;
 
         public IPAddress Address { get; set; }
 
-        public override RecordType GetRecordType() => RecordType.A;
+        public override RecordType GetRecordType() => RecordType.AAAA;
 
         public override byte[] ToByteArray()
         {
             var addressBytes = this.Address.GetAddressBytes();
 
             var bytes = this.SerializeCommonFields();
-            bytes.AppendIntAs2Bytes(Length);
+            bytes.AppendIntAs2Bytes(RDataLength);
             bytes.AddRange(addressBytes);
             return bytes.ToArray();
         }
