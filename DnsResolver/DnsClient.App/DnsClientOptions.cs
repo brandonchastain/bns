@@ -7,5 +7,6 @@ namespace Bns.DnsClient.App
     public class DnsClientOptions
     {
         public string NsIpAddress { get; set; } = "127.0.0.1";
+        public ushort NsPort { get; set; } = 8080;
     }
 }

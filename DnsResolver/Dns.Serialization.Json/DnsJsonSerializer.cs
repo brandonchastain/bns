@@ -1,29 +1,32 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 
 namespace Bns.Dns.Serialization
 {
     public class DnsJsonSerializer : IJsonSerializer
     {
-        private static JsonSerializer jsonSerializer = new JsonSerializer();
-
-        static DnsJsonSerializer()
+        private static JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions
         {
-            jsonSerializer.Converters.Add(new StringEnumConverter());
-        }
+            Converters = { new JsonStringEnumConverter() },
+            WriteIndented = false
+        };
+
+        private static JsonSerializerOptions prettyPrintOptions = new JsonSerializerOptions
+        {
+            Converters = { new JsonStringEnumConverter() },
+            WriteIndented = true
+        };
 
         public string ToJson(object o)
         {
-            var json = JToken.FromObject(o, jsonSerializer);
-            return json.ToString();
+            return JsonSerializer.Serialize(o, jsonSerializerOptions);
         }
 
         public string PrettyPrint(string json)
         {
-            var parsed = JToken.Parse(json);
-            var beautified = parsed.ToString(Formatting.Indented);
-            return beautified;
+            var node = JsonNode.Parse(json);
+            return JsonSerializer.Serialize(node, prettyPrintOptions);
         }
     }
 }

@@ -1,16 +1,17 @@
 ﻿using Bns.Dns;
 using Bns.Dns.Serialization;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics;
 
 namespace Dns.Test
 {
+    [TestClass]
     public class HeaderParseTests
     {
         private DnsMessageBinarySerializer serializer;
 
-        [SetUp]
+        [TestInitialize]
         public void ClassSetup()
         {
             var qSer = new DnsQuestionBinarySerializer();
@@ -18,7 +19,7 @@ namespace Dns.Test
             this.serializer = new DnsMessageBinarySerializer(rrSer, qSer);
         }
 
-        [Test]
+        [TestMethod]
         public void TestDeserializeHeader()
         {
             var b = new byte[] { 0xdf, 0xa8, 0x80, 0xa0, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00 };
@@ -38,13 +39,13 @@ namespace Dns.Test
             Assert.AreEqual(0, header.AddtlCount);
         }
 
-        [Test]
+        [TestMethod]
         public void TestSerializeHeader()
         {
             var b = new byte[] { 0xdf, 0xa8, 0x80, 0xa0, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00 };
             var header = serializer.DeserializeHeader(b);
             var newB = header.ToByteArray();
-            Assert.AreEqual(b, newB);
+            CollectionAssert.AreEqual(b, newB);
         }
     }
 }

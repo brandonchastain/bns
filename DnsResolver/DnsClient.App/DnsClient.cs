@@ -70,7 +70,7 @@ namespace Bns.DnsClient.App
         private void BuildNameserverEndpoint()
         {
             var ipAddress = IPAddress.Parse(options.CurrentValue.NsIpAddress);
-            var port = 53;
+            var port = options.CurrentValue.NsPort;
             this.endpoint = new IPEndPoint(ipAddress, port);
         }
 
@@ -159,7 +159,8 @@ namespace Bns.DnsClient.App
             {
                 QClass = RecordClass.IN,
                 QType = RecordType.A,
-                QName = "mobile.pipe.aria.microsoft.com",
+                //QName = "mobile.pipe.aria.microsoft.com.",
+                QName = "brandonchastain.com.",
             };
         }
 
@@ -214,7 +215,7 @@ namespace Bns.DnsClient.App
         {
             if (intervalQueryCount > 0)
             {
-                Console.WriteLine($"[queryCount: {intervalQueryCount} | meanLatencyMs: {intervalLatencySum / intervalQueryCount}]");
+                Console.WriteLine($"[queryCount: {intervalQueryCount} | totalLatencyMs: {intervalLatencySum}\t| meanLatencyMs: {intervalLatencySum / intervalQueryCount}]");
             }
             else
             {

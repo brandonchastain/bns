@@ -22,10 +22,10 @@ namespace Bns.Dns.ResourceRecords
             var qNameBytes = QNameSerializer.SerializeQName(this.Name);
             bytes.AddRange(qNameBytes);
 
-            int rrTypeNum = ((int)this.GetRecordType()) + 1;
+            int rrTypeNum = (int)this.GetRecordType();
             bytes.AppendIntAs2Bytes(rrTypeNum);
 
-            var rrClassNum = ((int)this.GetRecordClass()) + 1;
+            var rrClassNum = (int)this.GetRecordClass();
             bytes.AppendIntAs2Bytes(rrClassNum);
 
             bytes.AppendIntAs4Bytes(this.TimeToLive);

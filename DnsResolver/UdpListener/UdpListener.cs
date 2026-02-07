@@ -1,6 +1,7 @@
 ﻿using Bns.StubResolver.Common;
 using Bns.StubResolver.Udp.Contracts;
 using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +20,7 @@ namespace Bns.StubResolver.Udp
         {
             this.processMessageCallback = processMessage ?? throw new ArgumentNullException(nameof(processMessage));
             this.listenPort = port;
-            this.listener = new UdpClient(listenPort);
+            this.listener = new UdpClient(new IPEndPoint(IPAddress.Any, listenPort));
         }
 
         public async Task Start(CancellationToken cancellationToken)

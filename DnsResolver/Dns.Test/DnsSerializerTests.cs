@@ -1,11 +1,12 @@
 using Bns.Dns;
 using Bns.Dns.Serialization;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 
 namespace Dns.Test
 {
+    [TestClass]
     public class DnsSerializerTests
     {
 
@@ -16,37 +17,37 @@ namespace Dns.Test
 
         private DnsQuestionBinarySerializer serializer;
 
-        [SetUp]
+        [TestInitialize]
         public void SetUp()
         {
             serializer = new DnsQuestionBinarySerializer();
         }
 
-        [Test]
+        [TestMethod]
         public void TestSerializeQuestion()
         {
             var question = GetAQuestion("www.");
             var serializedQuestion = serializer.SerializeQuestion(question);
             var expected = combine(www, qnameEnd);
-            Assert.AreEqual(expected, serializedQuestion);
+            CollectionAssert.AreEqual(expected, serializedQuestion);
         }
 
-        [Test]
+        [TestMethod]
         public void TestSerializeQuestionMultiPart()
         {
             var twoPartQuestion = GetAQuestion("www.microsoft.");
             var serializedQuestion = serializer.SerializeQuestion(twoPartQuestion);
             var expected = combine(www, microsoft, qnameEnd);
-            Assert.AreEqual(expected, serializedQuestion);
+            CollectionAssert.AreEqual(expected, serializedQuestion);
         }
 
-        [Test]
+        [TestMethod]
         public void TestSerializeQuestionThreePart()
         {
             var threePartQuestion = GetAQuestion("www.microsoft.com.");
             var serializedQuestion = serializer.SerializeQuestion(threePartQuestion);
             var expected = combine(www, microsoft, com, qnameEnd);
-            Assert.AreEqual(expected, serializedQuestion);
+            CollectionAssert.AreEqual(expected, serializedQuestion);
         }
 
         private Question GetAQuestion(string qname)
@@ -58,7 +59,7 @@ namespace Dns.Test
             return q;
         }
 
-        [Test]
+        [TestMethod]
         public void TestParseQName()
         {
             var buffer = new List<byte>(www);
@@ -69,7 +70,7 @@ namespace Dns.Test
             Assert.AreEqual(5, bytesRead); // 3 chars, 1 for size, and 1 for 00.
         }
 
-        [Test]
+        [TestMethod]
         public void TestDeserializeQuestion()
         {
             var buffer = combine(www, qnameEnd);
@@ -81,7 +82,7 @@ namespace Dns.Test
             Assert.AreEqual(buffer.Length, bytesRead);
         }
 
-        [Test]
+        [TestMethod]
         public void TestDeserializeQuestionTwoParts()
         {
             var buffer = combine(www, microsoft, qnameEnd);

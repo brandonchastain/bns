@@ -40,7 +40,14 @@ namespace Bns.StubResolver.Core
         private async Task<byte[]> ProcessRawQuery(UdpMessage udpMessage)
         {
             var dnsMessage = this.dnsSerializer.Deserialize(udpMessage.Buffer);
+            
+            Console.WriteLine($"{dnsMessage.Question.QClass} {dnsMessage.Question.QType}Received query for {dnsMessage.Question.QName} of type {dnsMessage.Question.QType}. ");
+
             var response = await this.resolutionStrategy.ResolveAsync(dnsMessage.Question);
+
+            // Clear ADDITIONAL section from query (EDNS OPT records, etc.)
+            dnsMessage.Additional.Clear();
+            dnsMessage.Header.AddtlCount = 0;
 
             dnsMessage.AddAnswersAndIncrementCount(response.Answers);
             dnsMessage.AddAuthorityAndIncrementCount(response.Authority);
@@ -51,7 +58,11 @@ namespace Bns.StubResolver.Core
             dnsMessage.Header.Rcode = response.Header.Rcode;
             dnsMessage.Header.Opcode = HeaderOpCode.StandardQuery;
 
-            return this.dnsSerializer.Serialize(dnsMessage);
+            byte[] serializedResponse = this.dnsSerializer.Serialize(dnsMessage);
+
+            Console.WriteLine($"{response.Question.QClass} {response.Question.QType}Responding with {response.Answers.Count} answers, {response.Authority.Count} authority records, and {response.Additional.Count} additional records.\n");
+
+            return serializedResponse;
         }
     }
 }

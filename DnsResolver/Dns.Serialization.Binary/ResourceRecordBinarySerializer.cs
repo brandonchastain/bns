@@ -40,7 +40,15 @@ namespace Bns.Dns.Serialization
                     {
                         Name = name,
                         TimeToLive = timeToLive,
-                        Address = new System.Net.IPAddress(new ReadOnlySpan<byte>(bytes, start + totalBytesRead, 4)),
+                        Address = new System.Net.IPAddress(new ReadOnlySpan<byte>(bytes, start + totalBytesRead, ARecord.Length)),
+                    };
+                    break;
+                case RecordType.AAAA:
+                    result = new AAAARecord()
+                    {
+                        Name = name,
+                        TimeToLive = timeToLive,
+                        Address = new System.Net.IPAddress(new ReadOnlySpan<byte>(bytes, start + totalBytesRead, AAAARecord.Length)),
                     };
                     break;
                 case RecordType.CNAME:
@@ -154,7 +162,6 @@ namespace Bns.Dns.Serialization
         public static RecordType DeserializeRecordType(byte[] bytes, int start)
         {
             int val = DnsQuestionBinarySerializer.Read2BytesAsInt(bytes, start);
-            val--;
             return (RecordType)val;
         }
 

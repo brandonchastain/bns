@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
-using Newtonsoft.Json;
+﻿using System;
 using System.Text;
 using Bns.Dns.Serialization;
 

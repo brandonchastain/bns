@@ -21,6 +21,7 @@ namespace Bns.Dns.Serialization
 
         public DnsMessage Deserialize(byte[] buffer)
         {
+            start = 0; // Reset position for each new message
             result = new DnsMessage();
             result.Header = DeserializeHeader(buffer);
             result.Question = DeserializeQuestion(buffer);

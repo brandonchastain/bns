@@ -2,13 +2,14 @@
 using System.Net;
 using Bns.Dns.ResourceRecords;
 using Bns.Dns.Serialization;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Dns.Test
 {
+    [TestClass]
     public class RrSerializationTests
     {
-        [Test]
+        [TestMethod]
         public void SerializeARecord()
         {
             var serializer = GetRrSerializer();
@@ -27,10 +28,10 @@ namespace Dns.Test
                                 0xc0, 0xa8, 0x01, 0x01};
 
             var serialized = aRecord.ToByteArray();
-            Assert.AreEqual(expected, serialized);
+            CollectionAssert.AreEqual(expected, serialized);
         }
 
-        [Test]
+        [TestMethod]
         public void SerializeCNameRecord()
         {
             var serializer = GetRrSerializer();
@@ -49,10 +50,10 @@ namespace Dns.Test
                                 0x03, 0x61, 0x61, 0x61, 0x00};
 
             var serialized = cname.ToByteArray();
-            Assert.AreEqual(expected, serialized);
+            CollectionAssert.AreEqual(expected, serialized);
         }
 
-        [Test]
+        [TestMethod]
         public void SerializeNSRecord()
         {
             var serializer = GetRrSerializer();
@@ -71,7 +72,7 @@ namespace Dns.Test
                                 0x03, 0x61, 0x61, 0x61, 0x00};
 
             var serialized = ns.ToByteArray();
-            Assert.AreEqual(expected, serialized);
+            CollectionAssert.AreEqual(expected, serialized);
         }
 
         //[Test]
